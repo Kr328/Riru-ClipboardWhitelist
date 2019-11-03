@@ -1,0 +1,16 @@
+apply plugin: 'java'
+apply plugin: 'rirutools.dex'
+
+dex {
+    output = "api.jar"
+    
+    platform = "android-29"
+    buildTools = "29.0.0"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+}

@@ -1,0 +1,6 @@
+id=riru_clipboard_whitelist
+name=Riru - Clipboard Whitelist
+version=v1
+versionCode=1
+author=Kr328
+description=A module of Riru. Allow specific application access clipboard in background on Android 10

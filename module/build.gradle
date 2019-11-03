@@ -1,0 +1,34 @@
+apply plugin: 'java'
+apply plugin: 'rirutools.ndk'
+apply plugin: 'rirutools.dex'
+apply plugin: 'rirutools.magisk'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+ndk {
+    abiFilters = ["armeabi-v7a", "arm64-v8a"]
+    sourceDir = "src/main/cpp"
+}
+
+dex {
+    platform = "android-29"
+    buildTools = "29.0.0"
+}
+
+magisk {
+    output "$buildDir/outputs/riru-clipboard-whitelist.zip"
+    
+    zip.map(file("src/main/raw/magisk"), "/")
+    zip.map(file("$buildDir/outputs/dex/classes.jar"), "/system/framework/boot-clipboard-whitelist.jar")
+    zip.map(file("$buildDir/outputs/ndk/arm64-v8a/shared") ,"/system/lib64")
+    zip.map(file("$buildDir/outputs/ndk/armeabi-v7a/shared") ,"/system/lib")
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly project(":hideapi")
+}

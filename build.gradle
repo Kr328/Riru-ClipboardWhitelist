@@ -1,0 +1,20 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven { url "https://dl.bintray.com/kr328/riru-gradle-tools" }
+    }
+    dependencies {
+        classpath 'com.github.kr328:riru-gradle-tools:1.0-alpha08'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

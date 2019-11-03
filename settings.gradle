@@ -1,0 +1,5 @@
+rootProject.name = 'ClipboardWhitelist'
+
+include ':module'
+include ':hideapi'
+
