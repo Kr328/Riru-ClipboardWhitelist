@@ -13,7 +13,7 @@ A module of [Riru](https://github.com/RikkaApps/Riru). Allow specific applicatio
 
 
 * Add package to whitelist  
-  Edit file `/data/misc/riru/modules/clipboard_whitelist/packages.list` and add package name you want
+  Edit file `/data/misc/riru/modules/clipboard_whitelist/packages.list` and add package name direct which you want
   
 * Check module injected  
   Open terminal and type
