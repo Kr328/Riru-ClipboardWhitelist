@@ -13,8 +13,8 @@ A module of [Riru](https://github.com/RikkaApps/Riru). Allow specific applicatio
 
 
 * Add package to whitelist  
-  Edit file `/data/misc/clipboard/whitelist.list` and add package name direct which you want.
-  Split multiple packages with newline(\\n)
+  Edit file `/data/misc/clipboard/whitelist.list` and add package name direct which you want.  
+  One package name per line
   
 * Check module injected  
   ```bash
