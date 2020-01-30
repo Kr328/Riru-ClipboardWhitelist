@@ -1,34 +1,52 @@
-apply plugin: 'java'
-apply plugin: 'rirutools.ndk'
-apply plugin: 'rirutools.dex'
+apply plugin: 'com.android.application'
 apply plugin: 'rirutools.magisk'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-ndk {
-    abiFilters = ["armeabi-v7a", "arm64-v8a"]
-    sourceDir = "src/main/cpp"
+android {
+    compileSdkVersion 29
+    buildToolsVersion "29.0.3"
+    defaultConfig {
+        applicationId "com.github.kr328.clipboard"
+        minSdkVersion 29
+        targetSdkVersion 29
+        versionCode 10002
+        versionName "1.0.2"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
+    externalNativeBuild {
+        cmake {
+            path file('src/main/cpp/CMakeLists.txt')
+        }
+    }
 }
 
-dex {
-    platform = "android-29"
-    buildTools = "29.0.0"
+dependencies {
+    api project(":hideapi")
 }
 
 magisk {
     output "$buildDir/outputs/riru-clipboard-whitelist.zip"
     
     zip.map(file("src/main/raw/magisk"), "/")
-    zip.map(file("$buildDir/outputs/dex/classes.jar"), "/system/framework/boot-clipboard-whitelist.jar")
-    zip.map(file("$buildDir/outputs/ndk/arm64-v8a/shared") ,"/system/lib64")
-    zip.map(file("$buildDir/outputs/ndk/armeabi-v7a/shared") ,"/system/lib")
+    zip.map(file("$buildDir/outputs/extracted/classes.dex"), "/system/framework/boot-clipboard-whitelist.dex")
+    zip.map(file("$buildDir/outputs/extracted/lib/arm64-v8a/") ,"/system/lib64")
+    zip.map(file("$buildDir/outputs/extracted/lib/armeabi-v7a/") ,"/system/lib")
 }
 
-repositories {
-    mavenCentral()
+task extractPackage(type: Copy) {
+    from zipTree("$buildDir/outputs/apk/release/module-release-unsigned.apk")
+    into "$buildDir/outputs/extracted"
 }
 
-dependencies {
-    compileOnly project(":hideapi")
+afterEvaluate {
+    extractPackage.dependsOn assembleRelease
+    magiskModule.dependsOn extractPackage
 }

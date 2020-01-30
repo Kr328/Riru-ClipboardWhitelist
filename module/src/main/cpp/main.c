@@ -13,7 +13,7 @@
 
 #define EXPORT __attribute__((visibility("default")))
 
-#define DEX_PATH  "/system/framework/boot-clipboard-whitelist.jar"
+#define DEX_PATH  "/system/framework/boot-clipboard-whitelist.dex"
 
 EXPORT
 int nativeForkSystemServerPost(JNIEnv *env, jclass clazz, jint res) {

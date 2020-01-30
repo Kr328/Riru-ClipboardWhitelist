@@ -121,6 +121,7 @@ REPLACE="
 
 RIRU_PATH="/data/misc/riru"
 MODULE_NAME="clipboard_whitelist"
+DATA_PATH="/data/misc/clipboard"
 
 print_modname() {
   ui_print "*******************************"
@@ -168,15 +169,19 @@ on_install() {
   ui_print "- Extracting extra files"
   unzip -o "$ZIPFILE" 'data/*' -d "$TMPDIR" >&2
 
- [[ -d "$TARGET" ]] || mkdir -p "$TARGET" || abort "! Can't mkdir -p $TARGET"
+  [[ -d "$TARGET" ]] || mkdir -p "$TARGET" || abort "! Can't mkdir -p $TARGET"
   cp -af "$TMPDIR/data/." "$TARGET" || abort "! Can't cp -af $TMPDIR$TARGET/. $TARGET"
-
   ui_print "- Files copied"
+  
+  ui_print "- Create whitelist.list"
+  mkdir -p "$DATA_PATH"
+  touch "$DATA_PATH/whitelist.list"
 }
 
 set_permissions() {
   # The following is the default rule, DO NOT remove
-  set_perm_recursive $MODPATH 0 0 0755 0644
+  set_perm_recursive $MODPATH 0    0    0755 0644
+  set_perm_recursive $DATA_PATH  1000 1000 0755 0644 u:object_r:system_data_file:s0
 
   # Here are some examples:
   # set_perm_recursive  $MODPATH/system/lib       0     0       0755      0644

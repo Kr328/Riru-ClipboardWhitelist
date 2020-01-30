@@ -1,9 +1,14 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
 buildscript {
     repositories {
+        google()
         jcenter()
+
         maven { url "https://dl.bintray.com/kr328/riru-gradle-tools" }
     }
     dependencies {
+        classpath 'com.android.tools.build:gradle:3.5.3'
         classpath 'com.github.kr328:riru-gradle-tools:1.0-alpha08'
     }
 }

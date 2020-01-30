@@ -10,6 +10,7 @@ public class ServiceManagerProxy implements IServiceManager {
     private static boolean installed;
     private IServiceManager original;
     private Callback callback;
+
     private ServiceManagerProxy(IServiceManager original, Callback callback) {
         this.original = original;
         this.callback = callback;

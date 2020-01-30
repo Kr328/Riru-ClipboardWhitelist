@@ -5,5 +5,6 @@ public class Constants {
 
     static final String LOADED_PROPERTIES = "sys.clipboard.whitelist";
 
-    static final String DATA_PATH = "/data/misc/riru/modules/clipboard_whitelist/";
+    static final String DATA_PATH = "/data/misc/clipboard/";
+    static final String WHITELIST_FILE = "whitelist.list";
 }

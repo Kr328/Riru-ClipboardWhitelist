@@ -7,7 +7,6 @@ import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
@@ -34,15 +33,17 @@ public class DataStore extends FileObserver {
         }).start();
 
         synchronized (this) {
-            if ( handler != null )
+            if (handler != null)
                 return;
-            try { this.wait(); } catch (InterruptedException ignored) {}
+            try {
+                this.wait();
+            } catch (InterruptedException ignored) {}
         }
     }
 
     @Override
     public void onEvent(int event, String path) {
-        if ("packages.list".equals(path)) {
+        if (Constants.WHITELIST_FILE.equals(path)) {
             handler.removeMessages(0);
             handler.postDelayed(this::load, 1000);
 
@@ -51,7 +52,7 @@ public class DataStore extends FileObserver {
 
     private void load() {
         try {
-            String data = Utils.readFile(new File(Constants.DATA_PATH, "packages.list"));
+            String data = Utils.readFile(new File(Constants.DATA_PATH, Constants.WHITELIST_FILE));
 
             packages.clear();
 
@@ -59,12 +60,12 @@ public class DataStore extends FileObserver {
                     .filter(Objects::nonNull)
                     .map(String::trim)
                     .filter(s -> !s.isEmpty())
-                    .peek(s -> Log.i(Constants.TAG, s))
+                    .peek(s -> Log.i(Constants.TAG, "package:" + s))
                     .forEach(packages::add);
 
-            Log.i(Constants.TAG, "Package list reloaded");
+            Log.i(Constants.TAG, "Reloaded");
         } catch (IOException e) {
-            Log.w(Constants.TAG, "Load config file " + Constants.DATA_PATH + "packages.list" + " failure");
+            Log.w(Constants.TAG, "Load config file " + Constants.DATA_PATH + Constants.WHITELIST_FILE + " failure", e);
         }
     }
 

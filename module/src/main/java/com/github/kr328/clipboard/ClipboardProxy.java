@@ -8,7 +8,6 @@ import android.content.pm.IPackageManager;
 import android.os.Binder;
 import android.os.Process;
 import android.os.RemoteException;
-import android.os.SystemProperties;
 import android.util.Log;
 import com.github.kr328.clipboard.proxy.ProxyBinderFactory.ReplaceTransact;
 
