@@ -18,6 +18,5 @@ public interface IPackageManager extends IInterface {
         }
     }
 
-    ParceledListSlice<ResolveInfo> queryIntentActivities(Intent intent, String resolvedType, int flags, int userId) throws RemoteException;
     int getPackageUid(String packageName, int flags, int userId) throws RemoteException;
 }

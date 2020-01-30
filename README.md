@@ -13,7 +13,7 @@ A module of [Riru](https://github.com/RikkaApps/Riru). Allow specific applicatio
 
 
 * Add package to whitelist  
-  Edit file `/data/misc/clipboard/whitelist.list` and add package name direct which you want.  
+  Edit file `/data/misc/clipboard/whitelist.list` and add package name direct which you want.
   Split multiple packages with newline(\\n)
   
 * Check module injected  
@@ -36,7 +36,7 @@ A module of [Riru](https://github.com/RikkaApps/Riru). Allow specific applicatio
 3. Run command 
 
     ``` bash 
-    ./gradlew build
+    ./gradlew :module:magiskModule
     ```
     
 4. Get riru-clipboard-whitelist.zip in module/build/outputs
