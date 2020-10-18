@@ -1,116 +1,90 @@
 package com.github.kr328.clipboard;
 
-import android.content.ClipData;
-import android.content.ClipDescription;
-import android.content.IClipboard;
-import android.content.IOnPrimaryClipChangedListener;
 import android.content.pm.IPackageManager;
 import android.os.Binder;
-import android.os.Process;
+import android.os.IBinder;
+import android.os.IInterface;
+import android.os.Parcel;
 import android.os.RemoteException;
-import android.util.Log;
-import com.github.kr328.clipboard.proxy.ProxyBinderFactory.ReplaceTransact;
 
-public class ClipboardProxy extends IClipboard.Stub {
-    private final static String SHELL_PACKAGE = "com.android.shell";
-    private IClipboard original;
-    private IPackageManager pm;
-    private DataStore dataStore = new DataStore();
+import java.io.FileDescriptor;
 
-    ClipboardProxy() {
-        dataStore.startWatching();
+public class ClipboardProxy extends Binder {
+    private final IBinder original;
+    private final DataStore dataStore;
+
+    ClipboardProxy(IBinder original, IPackageManager packageManager) {
+        this.original = original;
+        this.dataStore = new DataStore(packageManager);
+
         dataStore.postLoad();
     }
 
-    public void setClipboard(IClipboard clipboard) {
-        this.original = clipboard;
-    }
+    @Override
+    protected boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
 
-    void setPackageManager(IPackageManager pm) {
-        this.pm = pm;
-    }
 
-    private <T> T runAsShell(String methodName, RunAsShellFunctionWithResult<T> function) throws RemoteException {
-        Log.v(Constants.TAG, "" + Binder.getCallingUid() + ": " + methodName);
-
-        long token = Binder.clearCallingIdentity();
-        long shellToken = token & 0xFFFFFFFFL | ((long) (Process.SHELL_UID) << 32);
-
-        Binder.restoreCallingIdentity(shellToken);
-
-        T result = function.call();
-
-        Binder.restoreCallingIdentity(token);
-
-        return result;
-    }
-
-    private void runAsShell(String methodName, RunAsShellFunctionVoid function) throws RemoteException {
-        runAsShell(methodName, () -> {
-            function.call();
-            return true;
-        });
+        return original.transact(code, data, reply, flags);
     }
 
     @Override
-    @ReplaceTransact
-    public ClipData getPrimaryClip(String pkg, int userId) throws RemoteException {
-        if (dataStore.getPackages().contains(pkg) && pm.getPackageUid(pkg, 0, userId) == Binder.getCallingUid())
-            return runAsShell("getPrimaryClip", () -> original.getPrimaryClip(SHELL_PACKAGE, userId));
-
-        return original.getPrimaryClip(pkg, userId);
+    public String getInterfaceDescriptor() {
+        try {
+            return original.getInterfaceDescriptor();
+        } catch (RemoteException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
     @Override
-    @ReplaceTransact
-    public ClipDescription getPrimaryClipDescription(String callingPackage, int userId) throws RemoteException {
-        if (dataStore.getPackages().contains(callingPackage) && pm.getPackageUid(callingPackage, 0, userId) == Binder.getCallingUid())
-            return runAsShell("getPrimaryClipDescription", () -> original.getPrimaryClipDescription(SHELL_PACKAGE, userId));
-
-        return original.getPrimaryClipDescription(callingPackage, userId);
+    public boolean pingBinder() {
+        return original.pingBinder();
     }
 
     @Override
-    @ReplaceTransact
-    public boolean hasPrimaryClip(String callingPackage, int userId) throws RemoteException {
-        if (dataStore.getPackages().contains(callingPackage) && pm.getPackageUid(callingPackage, 0, userId) == Binder.getCallingUid())
-            return runAsShell("hasPrimaryClip", () -> original.hasPrimaryClip(SHELL_PACKAGE, userId));
-
-        return original.hasPrimaryClip(callingPackage, userId);
+    public boolean isBinderAlive() {
+        return original.isBinderAlive();
     }
 
     @Override
-    @ReplaceTransact
-    public boolean hasClipboardText(String callingPackage, int userId) throws RemoteException {
-        if (dataStore.getPackages().contains(callingPackage) && pm.getPackageUid(callingPackage, 0, userId) == Binder.getCallingUid())
-            return runAsShell("hasClipboardText", () -> original.hasClipboardText(SHELL_PACKAGE, userId));
-
-        return original.hasClipboardText(callingPackage, userId);
+    public IInterface queryLocalInterface(String descriptor) {
+        return null;
     }
 
     @Override
-    @ReplaceTransact
-    public void addPrimaryClipChangedListener(IOnPrimaryClipChangedListener listener, String callingPackage, int userId) throws RemoteException {
-        if (dataStore.getPackages().contains(callingPackage) && pm.getPackageUid(callingPackage, 0, userId) == Binder.getCallingUid())
-            runAsShell("addPrimaryClipChangedListener", () -> original.addPrimaryClipChangedListener(listener, SHELL_PACKAGE, userId));
-        else
-            original.addPrimaryClipChangedListener(listener, callingPackage, userId);
+    public void attachInterface(IInterface owner, String descriptor) {
+        super.attachInterface(owner, descriptor);
     }
 
     @Override
-    @ReplaceTransact
-    public void removePrimaryClipChangedListener(IOnPrimaryClipChangedListener listener, String callingPackage, int userId) throws RemoteException {
-        if (dataStore.getPackages().contains(callingPackage) && pm.getPackageUid(callingPackage, 0, userId) == Binder.getCallingUid())
-            runAsShell("removePrimaryClipChangedListener", () -> original.removePrimaryClipChangedListener(listener, SHELL_PACKAGE, userId));
-        else
-            original.removePrimaryClipChangedListener(listener, callingPackage, userId);
+    public void dump(FileDescriptor fd, String[] args) {
+        try {
+            original.dump(fd, args);
+        } catch (RemoteException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
-    private interface RunAsShellFunctionWithResult<T> {
-        T call() throws RemoteException;
+    @Override
+    public void dumpAsync(FileDescriptor fd, String[] args) {
+        try {
+            original.dumpAsync(fd, args);
+        } catch (RemoteException e) {
+            throw new IllegalArgumentException(e);
+        }
     }
 
-    private interface RunAsShellFunctionVoid {
-        void call() throws RemoteException;
+    @Override
+    public void linkToDeath(DeathRecipient recipient, int flags) {
+        try {
+            original.linkToDeath(recipient, flags);
+        } catch (RemoteException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    @Override
+    public boolean unlinkToDeath(DeathRecipient recipient, int flags) {
+        return original.unlinkToDeath(recipient, flags);
     }
 }

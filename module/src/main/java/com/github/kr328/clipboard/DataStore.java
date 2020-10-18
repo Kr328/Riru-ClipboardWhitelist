@@ -1,29 +1,40 @@
 package com.github.kr328.clipboard;
 
+import android.content.pm.IPackageManager;
 import android.os.FileObserver;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.RemoteException;
 import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Stream;
 
 public class DataStore extends FileObserver {
-    private Set<String> packages = Collections.synchronizedSet(new HashSet<>());
+    public static final String DATA_PATH = "/data/misc/clipboard/";
+    public static final String DATA_FILE = "whitelist.list";
+
+    private final Set<Integer> packages = Collections.synchronizedSet(new HashSet<>());
+    private final IPackageManager packageManager;
+
     private Handler handler;
 
-    DataStore() {
-        super(new File(Constants.DATA_PATH), CREATE | MOVED_TO | CLOSE_WRITE | DELETE | MOVED_FROM);
+    DataStore(IPackageManager packageManager) {
+        super(new File(DATA_PATH), CREATE | MOVED_TO | CLOSE_WRITE | DELETE | MOVED_FROM);
+
+        this.packageManager = packageManager;
 
         new Thread(() -> {
             Looper.prepare();
 
-            handler = new Handler();
+            handler = new Handler(Looper.myLooper());
 
             synchronized (DataStore.this) {
                 this.notify();
@@ -43,29 +54,30 @@ public class DataStore extends FileObserver {
 
     @Override
     public void onEvent(int event, String path) {
-        if (Constants.WHITELIST_FILE.equals(path)) {
+        if (DATA_FILE.equals(path)) {
             handler.removeMessages(0);
             handler.postDelayed(this::load, 1000);
-
         }
     }
 
     private void load() {
         try {
-            String data = Utils.readFile(new File(Constants.DATA_PATH, Constants.WHITELIST_FILE));
+            List<String> data = Files.readAllLines(Paths.get(DATA_PATH, DATA_FILE));
 
             packages.clear();
 
-            Stream.of(data.split("\\s"))
+            data.stream()
                     .filter(Objects::nonNull)
                     .map(String::trim)
                     .filter(s -> !s.isEmpty())
-                    .peek(s -> Log.i(Constants.TAG, "package:" + s))
+                    .peek(s -> Log.i(Injector.TAG, "package:" + s))
+                    .map(this::getUidOfPackage)
+                    .filter(uid -> uid > 0)
                     .forEach(packages::add);
 
-            Log.i(Constants.TAG, "Reloaded");
+            Log.i(Injector.TAG, "Reloaded");
         } catch (IOException e) {
-            Log.w(Constants.TAG, "Load config file " + Constants.DATA_PATH + Constants.WHITELIST_FILE + " failure", e);
+            Log.w(Injector.TAG, "Load config file " + DATA_PATH + DATA_FILE + " failure", e);
         }
     }
 
@@ -74,7 +86,17 @@ public class DataStore extends FileObserver {
         handler.postDelayed(this::load, 1000);
     }
 
-    Set<String> getPackages() {
+    Set<Integer> getPackageUids() {
         return packages;
+    }
+
+    private int getUidOfPackage(String pkg) {
+        try {
+            return packageManager.getPackageUid(pkg, 0, 0);
+        } catch (RemoteException e) {
+            Log.w(Injector.TAG, "Obtains uid of " + pkg + " failure.", e);
+
+            return -1;
+        }
     }
 }

@@ -1,45 +1,40 @@
-# Riru - Clipboard Whitelist
+# Riru - IFWEnhance
 
-A module of [Riru](https://github.com/RikkaApps/Riru). Allow specific application access clipboard in background on Android 10.
+A module of [Riru](https://github.com/RikkaApps/Riru). Enhance Intent Firewall.
 
 ## Requirements
 
 * [Riru](https://github.com/RikkaApps/Riru) > 19 installed.
-* Android 10
+* Android 9.0 (preview not tested)
 
 
 
-## Configure
+## Feature
+
+Enhance Intent Firewall
+
+* Apply Intent Firewall for **Implicit intents** (`PackageManager.queryIntentActivities`)
 
 
-* Add package to whitelist  
-  Edit file `/data/misc/clipboard/whitelist.list` and add package name direct which you want.
-  One package name per line
-  
-* Check module injected  
-  ```bash
-  getprop sys.clipboard.whitelist
-  ```
 
 ## Build
 
-1. Install JDK, Android SDK, Android NDK
+1. Install JDK ,Gradle ,Android SDK ,Android NDK
 
 2. Configure local.properties 
 
    ```properties
    ndk.dir=/path/to/android/ndk
    sdk.dir=/path/to/android/sdk
-   cmake.dir=/path/to/android/cmake/*version*
    ```
 
 3. Run command 
 
     ``` bash 
-    ./gradlew :module:magiskModule
+    ./gradlew app:assembleRelease
     ```
     
-4. Get riru-clipboard-whitelist.zip in module/build/outputs
+4. Pick riru-ifw-enhance.zip from module/build/outputs
 
 
 
