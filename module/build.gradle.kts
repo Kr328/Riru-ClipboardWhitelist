@@ -1,3 +1,4 @@
+import org.gradle.kotlin.dsl.support.unzipTo
 import org.gradle.kotlin.dsl.support.zipTo
 import java.security.MessageDigest
 
@@ -26,13 +27,15 @@ android {
     ndkVersion = "21.3.6528147"
 
     defaultConfig {
-        applicationId = "com.github.kr328.clipboard"
+        applicationId = "com.github.kr328.clipboard.module"
 
         minSdkVersion(29)
         targetSdkVersion(30)
 
         versionCode = 5
         versionName = "v5"
+
+        multiDexEnabled = false
 
         externalNativeBuild {
             cmake {
@@ -191,6 +194,8 @@ android {
 
 dependencies {
     compileOnly(project(":hideapi"))
+
+    implementation(project(":shared"))
 
     implementation("rikka.ndk:riru:9.1")
 }

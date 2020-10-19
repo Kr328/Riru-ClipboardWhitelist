@@ -7,6 +7,8 @@ import android.os.Parcel;
 import android.os.RemoteException;
 import android.util.Log;
 
+import com.github.kr328.clipboard.shared.Constants;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -41,18 +43,22 @@ public class ProxyFactory {
                 final int[] code = hook.value();
                 final int count = codes.size();
 
-                if (code.length == 0) {
-                    reflectCode(impl, method);
+                if (code.length > 0) {
+                    for ( int c : code ) {
+                        codes.add(c);
+                    }
                 } else {
-                    codes.addAll(IntStream.of(code).boxed().collect(Collectors.toList()));
+                    reflectCode(impl, method);
                 }
 
                 if (codes.size() == count)
                     throw new NoSuchMethodException("implement of " + method.toGenericString() + " not found.");
             } catch (ReflectiveOperationException e) {
-                Log.w(ProxyFactory.class.getName(), "hook " + original.getClass().toGenericString() + " failure", e);
+                Log.w(Constants.TAG, "hook " + original.getClass().toGenericString() + " failure", e);
             }
         }
+
+        Log.i(Constants.TAG, "hook " + codes.toString());
 
         return new ProxyBinder(original, replaced, codes);
     }

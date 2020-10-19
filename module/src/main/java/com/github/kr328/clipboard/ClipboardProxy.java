@@ -6,16 +6,19 @@ import android.content.IClipboard;
 import android.content.IOnPrimaryClipChangedListener;
 import android.content.pm.IPackageManager;
 import android.os.Binder;
+import android.os.Parcel;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 
 import com.github.kr328.clipboard.ProxyFactory.TransactHook;
+import com.github.kr328.clipboard.shared.Constants;
 
 public class ClipboardProxy extends IClipboard.Stub {
     private final static String SHELL_PACKAGE = "com.android.shell";
 
-    private final DataStore dataStore = new DataStore();
     private final IClipboard original;
+    private final WhitelistService whitelistService = new WhitelistService();
+
     private IPackageManager packageManager;
 
     ClipboardProxy(IClipboard original) {
@@ -25,7 +28,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     @Override
     @TransactHook
     public ClipData getPrimaryClip(String pkg, int userId) throws RemoteException {
-        if (dataStore.shouldIgnore(pkg))
+        if (DataStore.instance.shouldIgnore(pkg))
             return original.getPrimaryClip(pkg, userId);
 
         enforcePackageUid(pkg, Binder.getCallingUid(), userId);
@@ -38,7 +41,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     @Override
     @TransactHook
     public ClipDescription getPrimaryClipDescription(String callingPackage, int userId) throws RemoteException {
-        if (dataStore.shouldIgnore(callingPackage))
+        if (DataStore.instance.shouldIgnore(callingPackage))
             return original.getPrimaryClipDescription(callingPackage, userId);
 
         enforcePackageUid(callingPackage, Binder.getCallingUid(), userId);
@@ -51,7 +54,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     @Override
     @TransactHook
     public boolean hasPrimaryClip(String callingPackage, int userId) throws RemoteException {
-        if (dataStore.shouldIgnore(callingPackage))
+        if (DataStore.instance.shouldIgnore(callingPackage))
             return original.hasPrimaryClip(callingPackage, userId);
 
         enforcePackageUid(callingPackage, Binder.getCallingUid(), userId);
@@ -64,7 +67,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     @Override
     @TransactHook
     public boolean hasClipboardText(String callingPackage, int userId) throws RemoteException {
-        if (dataStore.shouldIgnore(callingPackage))
+        if (DataStore.instance.shouldIgnore(callingPackage))
             return original.hasClipboardText(callingPackage, userId);
 
         enforcePackageUid(callingPackage, Binder.getCallingUid(), userId);
@@ -77,7 +80,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     @Override
     @TransactHook
     public void addPrimaryClipChangedListener(IOnPrimaryClipChangedListener listener, String callingPackage, int userId) throws RemoteException {
-        if (dataStore.shouldIgnore(callingPackage)) {
+        if (DataStore.instance.shouldIgnore(callingPackage)) {
             original.addPrimaryClipChangedListener(listener, callingPackage, userId);
 
             return;
@@ -93,7 +96,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     @Override
     @TransactHook
     public void removePrimaryClipChangedListener(IOnPrimaryClipChangedListener listener, String callingPackage, int userId) throws RemoteException {
-        if (dataStore.shouldIgnore(callingPackage)) {
+        if (DataStore.instance.shouldIgnore(callingPackage)) {
             original.removePrimaryClipChangedListener(listener, callingPackage, userId);
 
             return;
@@ -104,6 +107,21 @@ public class ClipboardProxy extends IClipboard.Stub {
         asShell();
 
         original.removePrimaryClipChangedListener(listener, SHELL_PACKAGE, userId);
+    }
+
+    @Override
+    @TransactHook(Constants.TRANSACT_CODE_GET_SERVICE)
+    public boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
+        if (Constants.TRANSACT_CODE_GET_SERVICE == code) {
+            if (obtainPackageManager().getPackageUid(Constants.APP_PACKAGE_NAME, 0, 0)
+                    != Binder.getCallingUid())
+                return super.onTransact(code, data, reply, flags);
+
+            reply.writeStrongBinder(whitelistService);
+            return true;
+        }
+
+        return super.onTransact(code, data, reply, flags);
     }
 
     private void asShell() {

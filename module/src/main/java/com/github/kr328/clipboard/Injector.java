@@ -6,10 +6,10 @@ import android.os.IBinder;
 import android.os.Process;
 import android.util.Log;
 
+import static com.github.kr328.clipboard.shared.Constants.TAG;
+
 @SuppressWarnings({"unused", "RedundantSuppression"})
 public class Injector extends ServiceProxy {
-    public static final String TAG = "ClipboardWhitelist";
-
     public static void inject(String argument) {
         Log.i(TAG, String.format("Uid = %d Pid = %d", Process.myUid(), Process.myPid()));
 

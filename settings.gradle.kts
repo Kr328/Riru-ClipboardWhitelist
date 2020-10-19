@@ -1,3 +1,3 @@
 rootProject.name = "Clipboard Whitelist"
 
-include(":module", ":hideapi")
+include(":shared", ":hideapi", ":module", ":app")
