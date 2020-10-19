@@ -48,7 +48,8 @@ public class DataStore extends FileObserver {
                 return;
             try {
                 this.wait();
-            } catch (InterruptedException ignored) {}
+            } catch (InterruptedException ignored) {
+            }
         }
     }
 
@@ -81,7 +82,7 @@ public class DataStore extends FileObserver {
         }
     }
 
-    void postLoad() {
+    void invalidate() {
         handler.removeMessages(0);
         handler.postDelayed(this::load, 1000);
     }
