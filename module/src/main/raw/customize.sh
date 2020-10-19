@@ -17,6 +17,7 @@ extract "$ZIPFILE" 'riru.sh' "$MODPATH"
 
 check_riru_version
 check_architecture
+check_sdk_version
 
 # extract libs
 ui_print "- Extracting module files"

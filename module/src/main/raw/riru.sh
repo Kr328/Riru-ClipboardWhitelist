@@ -35,5 +35,7 @@ check_architecture() {
 check_sdk_version() {
   if [ "$API" -lt "$RIRU_MIN_SDK_VERSION" ];then
     abort "! Unsupported SDK version: $API < $RIRU_MIN_SDK_VERSION"
+  else
+    ui_print "- Android API level: $API"
   fi
 }
