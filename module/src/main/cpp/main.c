@@ -12,7 +12,7 @@
 
 #include "riru.h"
 
-#define TAG "IFWEnhance"
+#define TAG "ClipboardWhitelist"
 
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
@@ -20,7 +20,7 @@
 #define EXPORT __attribute__((visibility("default"))) __attribute__((used))
 
 #define INJECT_DEX_PATH "/system/framework/" RIRU_MODULE_ID ".dex"
-#define INJECT_CLASS_NAME "com.github.kr328.ifw.Injector"
+#define INJECT_CLASS_NAME "com.github.kr328.clipboard.Injector"
 #define INJECT_METHOD_NAME "inject"
 #define INJECT_METHOD_SIGNATURE "(Ljava/lang/String;)V"
 

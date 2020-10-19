@@ -58,7 +58,8 @@ public class ProxyFactory {
     }
 
     private static void reflectCode(Object stubImpl, Method method) throws ReflectiveOperationException {
-        method.invoke(stubImpl, generateDefaultArgs(method.getParameterTypes()));
+        stubImpl.getClass().getMethod(method.getName(), method.getParameterTypes())
+                .invoke(stubImpl, generateDefaultArgs(method.getParameterTypes()));
     }
 
     private static Object[] generateDefaultArgs(Class<?>[] types) {
