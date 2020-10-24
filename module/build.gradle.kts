@@ -15,10 +15,11 @@ val moduleName = "Riru - Clipboard Whitelist"
 val moduleDescription = "A module of Riru. Add clipboard whitelist to Android 10."
 val moduleAuthor = "Kr328"
 val moduleFiles = listOf(
-        "system/framework/$riruId.dex"
+        "system/framework/$riruId.dex",
+        "system/app/ClipboardWhitelist/ClipboardWhitelist.apk"
 )
 
-val binaryTypes = setOf("dex", "so")
+val binaryTypes = setOf("dex", "so", "apk")
 
 android {
     compileSdkVersion(30)
@@ -81,6 +82,7 @@ android {
         val apkFile = this.outputs.first()?.outputFile ?: error("apk not found")
         val minSdkVersion = packageApplicationProvider?.get()?.minSdkVersion?.get() ?: error("invalid min sdk version")
         val regexPlaceholder = Regex("%%%(\\S+)%%%")
+        val variant = this.name
 
         task.doLast {
             zipContent.deleteRecursively()
@@ -164,6 +166,11 @@ android {
                     eachFile {
                         path = "system/framework/$riruId.dex"
                     }
+                }
+
+                from(project(":app").buildDir.resolve("outputs/apk/$variant/app-$variant.apk")) {
+                    into("system/app/ClipboardWhitelist")
+                    rename { "ClipboardWhitelist.apk" }
                 }
             }
 

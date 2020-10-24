@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
 }
@@ -25,6 +27,21 @@ android {
         named("release") {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+
+            signingConfig = signingConfigs.create("release")
+        }
+    }
+
+    signingConfigs {
+        named("release") {
+            val properties = Properties().apply {
+                load(rootProject.file("keystore.properties").inputStream())
+            }
+
+            keyAlias(properties.getProperty("keyAlias") ?: error("keystore.properties invalid"))
+            keyPassword(properties.getProperty("keyPassword") ?: error("keystore.properties invalid"))
+            storeFile(rootProject.file(properties.getProperty("storeFile") ?: error("keystore.properties invalid")))
+            storePassword(properties.getProperty("storePassword") ?: error("keystore.properties invalid"))
         }
     }
 

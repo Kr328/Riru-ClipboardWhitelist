@@ -21,3 +21,10 @@ allprojects {
 task("clean", type = Delete::class) {
     delete(rootProject.buildDir)
 }
+
+gradle.projectsEvaluated {
+    for ( variant in listOf("Release", "Debug") ) {
+        project("module").tasks["assemble$variant"]
+                .dependsOn(project(":app").tasks["assemble$variant"])
+    }
+}
