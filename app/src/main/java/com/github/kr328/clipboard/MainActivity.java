@@ -40,11 +40,8 @@ public class MainActivity extends Activity {
 
             applyPackage(((App)adapter.getItem(position)).getPackageName(), status);
         });
-    }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
+        getActionBar().setTitle(R.string.app_name);
 
         loadApps();
     }
