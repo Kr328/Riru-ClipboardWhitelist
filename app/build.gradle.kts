@@ -1,8 +1,5 @@
-val kotlin_version: String by rootProject.extra
-
 plugins {
     id("com.android.application")
-    id("kotlin-android")
 }
 
 android {
@@ -41,9 +38,6 @@ dependencies {
     compileOnly(project(":hideapi"))
 
     implementation(project(":shared"))
-
-    implementation("androidx.core:core-ktx:1.3.2")
-    implementation(kotlin("stdlib-jdk8", kotlin_version))
 }
 
 repositories {
