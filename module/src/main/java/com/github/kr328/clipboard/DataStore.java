@@ -64,8 +64,8 @@ public class DataStore {
 
     private void writePackages() {
         try {
-            if (!new File(DATA_PATH).mkdirs())
-                throw new FileNotFoundException("Create directory " + DATA_PATH + " failure");
+            //noinspection ResultOfMethodCallIgnored
+            new File(DATA_PATH).mkdirs();
 
             Files.write(Paths.get(DATA_PATH, DATA_FILE), packages, WRITE, CREATE, TRUNCATE_EXISTING);
         } catch (IOException e) {
