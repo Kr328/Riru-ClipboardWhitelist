@@ -2,4 +2,11 @@
 <resources>
     <string name="app_name">Clipboard Whitelist</string>
     <string name="launch_name">Clipboard</string>
+    <string name="ok">OK</string>
+    <string name="service_not_found">Whitelist Service not Found</string>
+    <string name="service_not_found_description">No whitelist service found in the system process, please check that the module is installed correctly or collect the logcat and send it to the developer.</string>
+    <string name="version_not_mismatch">Whitelist Service Version Mismatched</string>
+    <string name="version_not_mismatch_description">The whitelist service does not match the application version, please reinstall the module or uninstall the application update.</string>
+    <string name="unknown_error">Unknown Error</string>
+    <string name="unknown_error_description">Please collect the logcat and send it to the developer.</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.github.kr328.clipboard;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -38,7 +39,7 @@ public class MainActivity extends Activity {
         appsList.setOnItemClickListener((parent, view, position, id) -> {
             final boolean status = adapter.invertSelected(position);
 
-            applyPackage(((App)adapter.getItem(position)).getPackageName(), status);
+            applyPackage(((App) adapter.getItem(position)).getPackageName(), status);
         });
 
         getActionBar().setTitle(R.string.app_name);
@@ -69,14 +70,8 @@ public class MainActivity extends Activity {
                         .collect(Collectors.toList());
 
                 runOnUiThread(() -> adapter.updateApps(apps));
-            } catch (Service.ServiceNotFoundException e) {
-
-            } catch (Service.SystemLimitedException e) {
-
-            } catch (Service.VersionNotMatchedException e) {
-
             } catch (Exception e) {
-
+                showError(e);
             } finally {
                 updateLoading(true);
             }
@@ -97,17 +92,40 @@ public class MainActivity extends Activity {
 
     private void applyPackage(String packageName, boolean status) {
         threads.submit(() -> {
-           try {
-               final IClipboardWhitelist service = Service.getService();
+            try {
+                final IClipboardWhitelist service = Service.getService();
 
-               if ( status ) {
-                   service.addPackage(packageName);
-               } else {
-                   service.removePackage(packageName);
-               }
-           } catch (Exception e) {
-
-           }
+                if (status) {
+                    service.addPackage(packageName);
+                } else {
+                    service.removePackage(packageName);
+                }
+            } catch (Exception e) {
+                showError(e);
+            }
         });
+    }
+
+    private void showError(Exception e) {
+        final int title;
+        final int content;
+
+        if (e instanceof Service.ServiceNotFoundException) {
+            title = R.string.service_not_found;
+            content = R.string.service_not_found_description;
+        } else if (e instanceof Service.VersionNotMatchedException) {
+            title = R.string.version_not_mismatch;
+            content = R.string.version_not_mismatch_description;
+        } else {
+            title = R.string.unknown_error;
+            content = R.string.unknown_error_description;
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(content)
+                .setCancelable(false)
+                .setPositiveButton(R.string.ok, (dialog, which) -> finish())
+                .show();
     }
 }
