@@ -24,6 +24,7 @@ ui_print "- Extracting module files"
 
 extract "$ZIPFILE" 'module.prop' "$MODPATH"
 extract "$ZIPFILE" 'post-fs-data.sh' "$MODPATH"
+extract "$ZIPFILE" 'service.sh' "$MODPATH"
 extract "$ZIPFILE" 'uninstall.sh' "$MODPATH"
 #extract "$ZIPFILE" 'sepolicy.rule' "$MODPATH"
 
@@ -71,3 +72,6 @@ set_perm "$RIRU_MODULE_PATH/module.prop.new" 0 0 0600
 # set permissions
 ui_print "- Setting permissions"
 set_perm_recursive "$MODPATH" 0 0 0755 0644
+
+ui_print "- Reset installation status"
+rm "$MODPATH/apk_installed"

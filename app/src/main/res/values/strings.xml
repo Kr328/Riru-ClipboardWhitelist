@@ -9,4 +9,9 @@
     <string name="version_not_mismatch_description">The whitelist service does not match the application version, please reinstall the module or uninstall the application update.</string>
     <string name="unknown_error">Unknown Error</string>
     <string name="unknown_error_description">Please collect the logcat and send it to the developer.</string>
+    <string name="installation">Installation</string>
+    <string name="notification_installed">Successful Installation</string>
+    <string name="notification_installed_content">ClipboardWhitelist has been successfully installed, click here to configure.</string>
+    <string name="notification_exception">Installation Failure</string>
+    <string name="notification_exception_content">ClipboardWhitelist installation error, click here to check.</string>
 </resources>
