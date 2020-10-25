@@ -70,6 +70,7 @@ public class MainActivity extends Activity {
                         .collect(Collectors.toList());
 
                 runOnUiThread(() -> adapter.updateApps(apps));
+                runOnUiThread(this::showNotice);
             } catch (Exception e) {
                 showError(e);
             } finally {
@@ -127,5 +128,21 @@ public class MainActivity extends Activity {
                 .setCancelable(false)
                 .setPositiveButton(R.string.ok, (dialog, which) -> finish())
                 .show();
+    }
+
+    private void showNotice() {
+        if (getSharedPreferences("ui", MODE_PRIVATE).getBoolean("skip_notice", false))
+            return;
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.notice)
+                .setMessage(R.string.application_clipboard_detect)
+                .setCancelable(false)
+                .setPositiveButton(R.string.ok, (d, w) -> {})
+                .show();
+
+        getSharedPreferences("ui", MODE_PRIVATE).edit()
+                .putBoolean("skip_notice", true)
+                .apply();
     }
 }

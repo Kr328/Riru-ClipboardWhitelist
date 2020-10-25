@@ -14,4 +14,6 @@
     <string name="notification_installed_content">ClipboardWhitelist has been successfully installed, click here to configure.</string>
     <string name="notification_exception">Installation Failure</string>
     <string name="notification_exception_content">ClipboardWhitelist installation error, click here to check.</string>
+    <string name="notice">Notice</string>
+    <string name="application_clipboard_detect">Applications cannot detect that the clipboard is not accessible in the background and they may still assume that the clipboard is unavailable.</string>
 </resources>
