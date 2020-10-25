@@ -39,4 +39,4 @@ Allowing apps to access the clipboard in the background on Android 10.
     ./gradlew module:assembleRelease
     ```
     
-4. Pick riru-clipboard-whitelist-release.zip from module/build/outputs
+4. Pick `riru-clipboard-whitelist-release.zip` from `module/build/outputs`
