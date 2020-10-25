@@ -57,6 +57,7 @@ public class InstalledActivity extends Activity {
                 .setContentTitle(getString(title))
                 .setContentText(getString(content))
                 .setContentIntent(intent)
+                .setAutoCancel(true)
                 .setStyle(new Notification.BigTextStyle().bigText(getString(content)))
                 .build();
 
