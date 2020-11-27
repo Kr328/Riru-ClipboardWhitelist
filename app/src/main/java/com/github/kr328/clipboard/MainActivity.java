@@ -5,6 +5,8 @@ import android.app.AlertDialog;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -24,6 +26,8 @@ public class MainActivity extends Activity {
 
     private ListView appsList;
     private ProgressBar loading;
+
+    private boolean showSystemApps = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +58,28 @@ public class MainActivity extends Activity {
         threads.shutdownNow();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        if ( item.getItemId() == R.id.systemApps ) {
+            item.setChecked(!item.isChecked());
+
+            showSystemApps = item.isChecked();
+
+            loadApps();
+
+            return true;
+        }
+
+        return super.onMenuItemSelected(featureId, item);
+    }
+
     private void loadApps() {
         threads.submit(() -> {
             updateLoading(false);
@@ -64,7 +90,7 @@ public class MainActivity extends Activity {
                 final HashSet<String> whitelist = new HashSet<>(Arrays.asList(service.queryPackages()));
 
                 final List<App> apps = pm.getInstalledApplications(0).stream()
-                        .filter((info) -> (info.flags & ApplicationInfo.FLAG_SYSTEM) == 0)
+                        .filter((info) -> showSystemApps || (info.flags & ApplicationInfo.FLAG_SYSTEM) == 0)
                         .map((info) -> App.fromApplicationInfo(info, pm, whitelist.contains(info.packageName)))
                         .sorted()
                         .collect(Collectors.toList());

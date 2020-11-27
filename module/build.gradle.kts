@@ -33,8 +33,8 @@ android {
         minSdkVersion(29)
         targetSdkVersion(30)
 
-        versionCode = 5
-        versionName = "v5"
+        versionCode = 6
+        versionName = "v6"
 
         multiDexEnabled = false
 
