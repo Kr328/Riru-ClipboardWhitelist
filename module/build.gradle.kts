@@ -13,7 +13,7 @@ val buildVersionName: String by extra
 val buildNdkVersion: String by extra
 
 riru {
-    id = "riru_clipbpard_whitelist"
+    id = "riru_clipboard_whitelist"
     name = "Riru - ClipboardWhitelist"
     minApi = 9
     minApiName = "v22.0"
