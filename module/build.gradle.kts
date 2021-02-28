@@ -1,29 +1,22 @@
-import org.gradle.kotlin.dsl.support.unzipTo
-import org.gradle.kotlin.dsl.support.zipTo
-import java.security.MessageDigest
-
 plugins {
     id("com.android.application")
+    id("hideapi-redefine")
+    id("riru")
 }
 
-val riruId = "clipboard_whitelist"
-val riruApi = 9
-val riruName = "v22.0"
-
-val moduleId = "riru_clipboard_whitelist"
-val moduleName = "Riru - Clipboard Whitelist"
-val moduleDescription = "A module of Riru. Add clipboard whitelist to Android 10."
-val moduleAuthor = "Kr328"
-val moduleFiles = listOf(
-        "system/framework/$riruId.dex",
-        "system/app/ClipboardWhitelist/ClipboardWhitelist.apk"
-)
-
-val binaryTypes = setOf("dex", "so", "apk")
+riru {
+    id = "riru_clipbpard_whitelist"
+    name = "Riru - ClipboardWhitelist"
+    minApi = 9
+    minApiName = "v22.0"
+    description = "A module of Riru. Add clipboard whitelist to Android 10."
+    author = "Kr328"
+    dexName = "boot-clipboard-whitelist.dex"
+}
 
 android {
     compileSdkVersion(30)
-    buildToolsVersion("30.0.2")
+    buildToolsVersion("30.0.3")
 
     ndkVersion = "21.3.6528147"
 
@@ -41,9 +34,9 @@ android {
         externalNativeBuild {
             cmake {
                 arguments(
-                        "-DRIRU_API:INTEGER=$riruApi",
-                        "-DRIRU_NAME:STRING=$riruName",
-                        "-DRIRU_MODULE_ID:STRING=$riruId",
+                        "-DRIRU_API:INTEGER=${riru.minApi}",
+                        "-DRIRU_NAME:STRING=${riru.name}",
+                        "-DRIRU_MODULE_ID:STRING=${riru.riruId}",
                         "-DRIRU_MODULE_VERSION_CODE:INTEGER=$versionCode",
                         "-DRIRU_MODULE_VERSION_NAME:STRING=$versionName"
                 )
@@ -75,127 +68,7 @@ android {
     }
 
     applicationVariants.all {
-        val task = assembleProvider?.get() ?: error("assemble task not found")
-        val prefix = moduleId.replace('_', '-')
-        val zipFile = buildDir.resolve("outputs/$prefix-$name.zip")
-        val zipContent = buildDir.resolve("intermediates/magisk/$name")
-        val apkFile = this.outputs.first()?.outputFile ?: error("apk not found")
-        val minSdkVersion = packageApplicationProvider?.get()?.minSdkVersion?.get() ?: error("invalid min sdk version")
-        val regexPlaceholder = Regex("%%%(\\S+)%%%")
-        val variant = this.name
 
-        task.doLast {
-            zipContent.deleteRecursively()
-
-            zipContent.mkdirs()
-
-            val apkTree = zipTree(apkFile)
-
-            copy {
-                into(zipContent)
-
-                from(file("src/main/raw")) {
-                    exclude("riru.sh", "module.prop", "riru/module.prop.new", "dist-gitattributes")
-                }
-
-                from(file("src/main/raw/dist-gitattributes")) {
-                    rename { ".gitattributes" }
-                }
-
-                from(file("src/main/raw/riru.sh")) {
-                    filter { line ->
-                        line.replace(regexPlaceholder) {
-                            when (it.groupValues[1]) {
-                                "RIRU_MODULE_ID" -> riruId
-                                "RIRU_MIN_API_VERSION" -> riruApi.toString()
-                                "RIRU_MIN_VERSION_NAME" -> riruName
-                                "RURU_MIN_SDK_VERSION" -> minSdkVersion.toString()
-                                else -> ""
-                            }
-                        }
-                    }
-                }
-
-                from(file("src/main/raw/module.prop")) {
-                    filter { line ->
-                        line.replace(regexPlaceholder) {
-                            when (it.groupValues[1]) {
-                                "MAGISK_ID" -> moduleId
-                                "MAIGKS_NAME" -> moduleName
-                                "MAGISK_VERSION_NAME" -> versionName!!
-                                "MAGISK_VERSION_CODE" -> versionCode.toString()
-                                "MAGISK_AUTHOR" -> moduleAuthor
-                                "MAGISK_DESCRIPTION" -> moduleDescription
-                                else -> ""
-                            }
-                        }
-                    }
-                }
-
-                from(file("src/main/raw/riru/module.prop.new")) {
-                    into("riru/")
-
-                    filter { line ->
-                        line.replace(regexPlaceholder) {
-                            when (it.groupValues[1]) {
-                                "RIRU_NAME" -> moduleName.removePrefix("Riru - ")
-                                "RIRU_VERSION_NAME" -> versionName!!
-                                "RIRU_VERSION_CODE" -> versionCode.toString()
-                                "RIRU_AUTHOR" -> moduleAuthor
-                                "RIRU_DESCRIPTION" -> moduleDescription
-                                "RIRU_API" -> riruApi.toString()
-                                else -> ""
-                            }
-                        }
-                    }
-                }
-
-                from(apkTree) {
-                    include("lib/**")
-                    eachFile {
-                        path = path
-                                .replace("lib/x86_64", "system_x86/lib64")
-                                .replace("lib/x86", "system_x86/lib")
-                                .replace("lib/arm64-v8a", "system/lib64")
-                                .replace("lib/armeabi-v7a", "system/lib")
-                    }
-                }
-
-                from(apkTree) {
-                    include("classes.dex")
-                    eachFile {
-                        path = "system/framework/$riruId.dex"
-                    }
-                }
-
-                from(project(":app").buildDir.resolve("outputs/apk/$variant/app-$variant.apk")) {
-                    into("system/app/ClipboardWhitelist")
-                    rename { "ClipboardWhitelist.apk" }
-                }
-            }
-
-            zipContent.resolve("extras.files")
-                    .writeText(moduleFiles.joinToString("\n") + "\n")
-
-            fileTree(zipContent)
-                    .filter { it.isFile }
-                    .filterNot { it.extension in binaryTypes }
-                    .forEach { it.writeText(it.readText().replace("\r\n", "\n")) }
-
-            fileTree(zipContent)
-                    .matching { exclude("customize.sh", "verify.sh", "META-INF", "README.md") }
-                    .filter { it.isFile }
-                    .forEach {
-                        val sha256sum = MessageDigest.getInstance("SHA-256").digest(it.readBytes())
-                        val sha256text = sha256sum.joinToString(separator = "") { b ->
-                            String.format("%02x", b.toInt() and 0xFF)
-                        }
-
-                        File(it.absolutePath + ".sha256sum").writeText(sha256text)
-                    }
-
-            zipTo(zipFile, zipContent)
-        }
     }
 }
 
@@ -204,5 +77,26 @@ dependencies {
 
     implementation(project(":shared"))
 
-    implementation("rikka.ndk:riru:9.1")
+    implementation("rikka.ndk:riru:10")
+}
+
+afterEvaluate {
+    android.applicationVariants.forEach {
+        val cName = it.name.capitalize()
+
+        val cp = tasks.register("copyModuleApk$cName", Copy::class.java) {
+            from(project(":app").buildDir
+                .resolve("outputs/apk/${it.name}/app-${it.name}.apk"))
+
+            into(generatedMagiskDir(it)
+                .resolve("system/app/ClipboardWhitelist"))
+
+            rename {
+                "ClipboardWhitelist.apk"
+            }
+        }
+
+        tasks["mergeMagisk$cName"].dependsOn(cp)
+        cp.get().dependsOn(project(":app").tasks["assemble$cName"])
+    }
 }

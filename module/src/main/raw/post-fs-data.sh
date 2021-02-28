@@ -13,7 +13,3 @@ if [ -f "$RIRU_MODULE_PATH/module.prop.new" ]; then
     rm "$RIRU_MODULE_PATH/module.prop"
     mv "$RIRU_MODULE_PATH/module.prop.new" "$RIRU_MODULE_PATH/module.prop"
 fi
-
-# export dex files
-mkdir -p "/data/misc/$RIRU_MODULE_ID"
-ln -sf "$MODDIR/module.dex" "/data/misc/$RIRU_MODULE_ID/module.dex"

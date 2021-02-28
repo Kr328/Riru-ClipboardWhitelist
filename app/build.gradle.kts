@@ -6,7 +6,7 @@ plugins {
 
 android {
     compileSdkVersion(30)
-    buildToolsVersion("30.0.2")
+    buildToolsVersion("30.0.3")
 
     defaultConfig {
         applicationId = "com.github.kr328.clipboard"
@@ -16,11 +16,6 @@ android {
 
         versionCode = 6
         versionName = "v6"
-    }
-
-    buildFeatures {
-        buildConfig = false
-        prefab = true
     }
 
     buildTypes {

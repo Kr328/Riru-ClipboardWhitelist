@@ -2,7 +2,9 @@
 
 MODDIR=${0%/*}
 
-if [ -f "$MODDIR/apk_installed" ];then
+LAUNCHED_PATH="$MODDIR/apk_launched"
+
+if [ -f "$LAUNCHED_PATH" ];then
   exit 0
 fi
 
@@ -13,6 +15,6 @@ do
     fi
 done
 
-touch "$MODDIR/apk_installed"
+touch "$LAUNCHED_PATH"
 
 /system/bin/am start -n com.github.kr328.clipboard/.InstalledActivity

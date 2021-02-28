@@ -19,14 +19,16 @@
 
 #define EXPORT __attribute__((visibility("default"))) __attribute__((used))
 
-#define INJECT_DEX_PATH "/system/framework/" RIRU_MODULE_ID ".dex"
+#define TARGET_RIRU_API 10
+
+#define INJECT_DEX_NAME "boot-clipboard-whitelist.dex"
+#define INJECT_DEX_PATH "/system/framework/" INJECT_DEX_NAME
 #define INJECT_CLASS_NAME "com.github.kr328.clipboard.Injector"
 #define INJECT_METHOD_NAME "inject"
 #define INJECT_METHOD_SIGNATURE "(Ljava/lang/String;)V"
 
 static void *dex;
 static size_t dex_size;
-static RiruApiV9 *api;
 
 static int catch_exception(JNIEnv *env) {
     int result = (*env)->ExceptionCheck(env);
@@ -160,15 +162,28 @@ void *init(void *arg) {
     switch (phase) {
         case 1: {
             int core_max_api_version = *(int*) arg;
-            riru_api_version = core_max_api_version <= RIRU_API ? core_max_api_version : RIRU_API;
+            riru_api_version = core_max_api_version <= TARGET_RIRU_API ? core_max_api_version : TARGET_RIRU_API;
             return &riru_api_version;
         }
         case 2: {
             switch (riru_api_version) {
                 case 9: {
-                    api = (RiruApiV9 *) arg;
-
                     module = malloc(sizeof(RiruModuleInfoV9));
+                    memset(module, 0, sizeof(*module));
+
+                    module->supportHide = 1;
+
+                    module->versionName = RIRU_MODULE_VERSION_NAME;
+                    module->version = RIRU_MODULE_VERSION_CODE;
+
+                    module->onModuleLoaded = &onModuleLoaded;
+                    module->shouldSkipUid = &shouldSkipUid;
+                    module->forkSystemServerPost = &nativeForkSystemServerPost;
+
+                    return module;
+                }
+                case 10: {
+                    module = malloc(sizeof(RiruModuleInfoV10));
                     memset(module, 0, sizeof(*module));
 
                     module->supportHide = 1;
