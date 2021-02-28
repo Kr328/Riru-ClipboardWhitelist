@@ -4,18 +4,23 @@ plugins {
     id("com.android.application")
 }
 
+val buildMinVersion: Int by extra
+val buildTargetVersion: Int by extra
+
+val buildVersionCode: Int by extra
+val buildVersionName: String by extra
+
 android {
-    compileSdkVersion(30)
-    buildToolsVersion("30.0.3")
+    compileSdkVersion(buildTargetVersion)
 
     defaultConfig {
         applicationId = "com.github.kr328.clipboard"
 
-        minSdkVersion(29)
-        targetSdkVersion(30)
+        minSdkVersion(buildMinVersion)
+        targetSdkVersion(buildTargetVersion)
 
-        versionCode = 6
-        versionName = "v6"
+        versionCode = buildVersionCode
+        versionName = buildVersionName
     }
 
     buildTypes {

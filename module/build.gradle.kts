@@ -4,6 +4,14 @@ plugins {
     id("riru")
 }
 
+val buildMinVersion: Int by extra
+val buildTargetVersion: Int by extra
+
+val buildVersionCode: Int by extra
+val buildVersionName: String by extra
+
+val buildNdkVersion: String by extra
+
 riru {
     id = "riru_clipbpard_whitelist"
     name = "Riru - ClipboardWhitelist"
@@ -15,19 +23,18 @@ riru {
 }
 
 android {
-    compileSdkVersion(30)
-    buildToolsVersion("30.0.3")
+    compileSdkVersion(buildTargetVersion)
 
-    ndkVersion = "21.3.6528147"
+    ndkVersion = buildNdkVersion
 
     defaultConfig {
         applicationId = "com.github.kr328.clipboard.module"
 
-        minSdkVersion(29)
-        targetSdkVersion(30)
+        minSdkVersion(buildMinVersion)
+        targetSdkVersion(buildTargetVersion)
 
-        versionCode = 6
-        versionName = "v6"
+        versionCode = buildVersionCode
+        versionName = buildVersionName
 
         multiDexEnabled = false
 

@@ -2,16 +2,21 @@ plugins {
     id("com.android.library")
 }
 
+val buildMinVersion: Int by extra
+val buildTargetVersion: Int by extra
+
+val buildVersionCode: Int by extra
+val buildVersionName: String by extra
+
 android {
-    compileSdkVersion(30)
-    buildToolsVersion("30.0.3")
+    compileSdkVersion(buildTargetVersion)
 
     defaultConfig {
-        minSdkVersion(26)
-        targetSdkVersion(30)
+        minSdkVersion(buildMinVersion)
+        targetSdkVersion(buildTargetVersion)
 
-        versionCode = 10000
-        versionName = "1.0.0"
+        versionCode = buildVersionCode
+        versionName = buildVersionName
     }
 
     buildTypes {
