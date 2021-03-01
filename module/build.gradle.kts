@@ -14,7 +14,7 @@ val buildNdkVersion: String by extra
 
 riru {
     id = "riru_clipboard_whitelist"
-    name = "Riru - ClipboardWhitelist"
+    name = "Riru - Clipboard Whitelist"
     minApi = 9
     minApiName = "v22.0"
     description = "A module of Riru. Add clipboard whitelist to Android 10."
