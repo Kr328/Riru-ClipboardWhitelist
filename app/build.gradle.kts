@@ -16,8 +16,8 @@ android {
     defaultConfig {
         applicationId = "com.github.kr328.clipboard"
 
-        minSdkVersion(buildMinVersion)
-        targetSdkVersion(buildTargetVersion)
+        minSdk = buildMinVersion
+        targetSdk = buildTargetVersion
 
         versionCode = buildVersionCode
         versionName = buildVersionName
@@ -35,13 +35,13 @@ android {
     signingConfigs {
         named("release") {
             val properties = Properties().apply {
-                load(rootProject.file("keystore.properties").inputStream())
+                rootProject.file("keystore.properties").inputStream().use(this::load)
             }
 
-            keyAlias(properties.getProperty("keyAlias") ?: error("keystore.properties invalid"))
-            keyPassword(properties.getProperty("keyPassword") ?: error("keystore.properties invalid"))
             storeFile(rootProject.file(properties.getProperty("storeFile") ?: error("keystore.properties invalid")))
             storePassword(properties.getProperty("storePassword") ?: error("keystore.properties invalid"))
+            keyAlias(properties.getProperty("keyAlias") ?: error("keystore.properties invalid"))
+            keyPassword(properties.getProperty("keyPassword") ?: error("keystore.properties invalid"))
         }
     }
 

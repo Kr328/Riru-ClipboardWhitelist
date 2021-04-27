@@ -15,11 +15,10 @@ val buildNdkVersion: String by extra
 riru {
     id = "riru_clipboard_whitelist"
     name = "Riru - Clipboard Whitelist"
-    minApi = 9
-    minApiName = "v22.0"
+    minApi = 28
+    minApiName = "25.0.0"
     description = "A module of Riru. Add clipboard whitelist to Android 10."
     author = "Kr328"
-    dexName = "boot-clipboard-whitelist.dex"
 }
 
 android {
@@ -30,8 +29,8 @@ android {
     defaultConfig {
         applicationId = "com.github.kr328.clipboard.module"
 
-        minSdkVersion(buildMinVersion)
-        targetSdkVersion(buildTargetVersion)
+        minSdk = buildMinVersion
+        targetSdk = buildTargetVersion
 
         versionCode = buildVersionCode
         versionName = buildVersionName
@@ -84,7 +83,7 @@ dependencies {
 
     implementation(project(":shared"))
 
-    implementation("rikka.ndk:riru:10")
+    implementation("dev.rikka.ndk:riru:25.0.0")
 }
 
 afterEvaluate {
@@ -96,7 +95,7 @@ afterEvaluate {
                 .resolve("outputs/apk/${it.name}/app-${it.name}.apk"))
 
             into(generatedMagiskDir(it)
-                .resolve("system/app/ClipboardWhitelist"))
+                .resolve("system/priv-app/ClipboardWhitelist"))
 
             rename {
                 "ClipboardWhitelist.apk"

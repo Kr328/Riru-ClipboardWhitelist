@@ -23,8 +23,6 @@ class HideapiRedefineTransform : Transform() {
         )
 
     override fun transform(transformInvocation: TransformInvocation) {
-        println("isIncremental = " + transformInvocation.isIncremental)
-
         if (!transformInvocation.isIncremental)
             transformInvocation.outputProvider.deleteAll()
 

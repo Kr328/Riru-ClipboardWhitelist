@@ -19,16 +19,17 @@
 
 #define EXPORT __attribute__((visibility("default"))) __attribute__((used))
 
-#define TARGET_RIRU_API 10
+#define RIRU_TARGET_API 25
 
-#define INJECT_DEX_NAME "boot-clipboard-whitelist.dex"
-#define INJECT_DEX_PATH "/system/framework/" INJECT_DEX_NAME
+#define INJECT_DEX_PATH "/runtime/runtime.dex"
 #define INJECT_CLASS_NAME "com.github.kr328.clipboard.Injector"
 #define INJECT_METHOD_NAME "inject"
 #define INJECT_METHOD_SIGNATURE "(Ljava/lang/String;)V"
 
 static void *dex;
 static size_t dex_size;
+
+static const char* magisk_path = NULL;
 
 static int catch_exception(JNIEnv *env) {
     int result = (*env)->ExceptionCheck(env);
@@ -42,7 +43,8 @@ static int catch_exception(JNIEnv *env) {
     return result;
 }
 
-static int load_and_invoke_dex(JNIEnv *env, void *dex_data, long dex_data_length, const char *argument) {
+static int
+load_and_invoke_dex(JNIEnv *env, void *dex_data, long dex_data_length, const char *argument) {
     // get system class loader
     jclass cClassLoader = (*env)->FindClass(env, "java/lang/ClassLoader");
     jmethodID mSystemClassLoader = (*env)->GetStaticMethodID(env, cClassLoader,
@@ -61,22 +63,22 @@ static int load_and_invoke_dex(JNIEnv *env, void *dex_data, long dex_data_length
                                                 bufferDex,
                                                 oSystemClassLoader);
 
-    if ( catch_exception(env) ) return 1;
+    if (catch_exception(env)) return 1;
 
     // get loaded dex inject method
     jmethodID mFindClass = (*env)->GetMethodID(env, cDexClassLoader, "loadClass",
-            "(Ljava/lang/String;Z)Ljava/lang/Class;");
+                                               "(Ljava/lang/String;Z)Ljava/lang/Class;");
     jstring sInjectClassName = (*env)->NewStringUTF(env, INJECT_CLASS_NAME);
     jclass cInject = (jclass) (*env)->CallObjectMethod(env, oDexClassLoader,
                                                        mFindClass, sInjectClassName, (jboolean) 0);
 
-    if ( catch_exception(env) ) return 1;
+    if (catch_exception(env)) return 1;
 
     // find method
     jmethodID mLoaded = (*env)->GetStaticMethodID(env, cInject, INJECT_METHOD_NAME,
                                                   INJECT_METHOD_SIGNATURE);
 
-    if ( catch_exception(env) ) return 1;
+    if (catch_exception(env)) return 1;
 
     // invoke inject method
     jstring stringArgument = (*env)->NewStringUTF(env, argument);
@@ -88,40 +90,40 @@ static int load_and_invoke_dex(JNIEnv *env, void *dex_data, long dex_data_length
 
 static void nativeForkSystemServerPost(JNIEnv *env, jclass clazz, jint res) {
     if (res == 0) {
-        if ( dex != NULL ) {
-            if ( load_and_invoke_dex(env, dex, dex_size, "") ) {
+        if (dex != NULL) {
+            if (load_and_invoke_dex(env, dex, dex_size, "")) {
                 LOGI("Inject dex failure");
             }
         }
     }
 }
 
-static int shouldSkipUid(int uid) {
-    // by default, Riru only call module functions in "normal app processes" (10000 <= uid % 100000 <= 19999)
-    // false = don't skip
-    return uid != 1000;
-}
-
 static void onModuleLoaded() {
     // called when the shared library of Riru core is loaded
 
-    int fd = open(INJECT_DEX_PATH, O_RDONLY);
-    if ( fd < 0 ) {
-        LOGE("Open dex file: %s", strerror(errno));
+    char path[PATH_MAX] = {'\0'};
+    if (magisk_path == NULL) {
+        LOGE("magisk path is null");
+        return;
+    }
 
-        return ;
+    sprintf(path, "%s/%s", magisk_path, INJECT_DEX_PATH);
+
+    int fd = open(path, O_RDONLY);
+    if (fd < 0) {
+        LOGE("open dex file: %s", strerror(errno));
+
+        return;
     }
 
     struct stat stat;
-
-    if ( fstat(fd, &stat) < 0 ) {
-        LOGE("fetch size of dex file: %s", strerror(errno));
+    if (fstat(fd, &stat) < 0) {
+        LOGE("get size of dex file: %s", strerror(errno));
 
         close(fd);
 
-        return ;
+        return;
     }
-
 
     dex = malloc(stat.st_size);
     dex_size = stat.st_size;
@@ -129,10 +131,10 @@ static void onModuleLoaded() {
     uint8_t *ptr = (uint8_t *) dex;
     int count = 0;
 
-    while ( count < stat.st_size ) {
+    while (count < stat.st_size) {
         int r = read(fd, ptr, stat.st_size - count);
 
-        if ( r < 0 ) {
+        if (r < 0) {
             LOGE("read dex: %s", strerror(errno));
 
             free(dex);
@@ -141,7 +143,7 @@ static void onModuleLoaded() {
             dex = NULL;
             dex_size = 0;
 
-            return ;
+            return;
         }
 
         count += r;
@@ -151,71 +153,28 @@ static void onModuleLoaded() {
     close(fd);
 }
 
-EXPORT
-void *init(void *arg) {
-    static RiruModuleInfoV9 *module;
-    static int riru_api_version = -1;
-    static int phase = 0;
-
-    phase++;
-
-    switch (phase) {
-        case 1: {
-            int core_max_api_version = *(int*) arg;
-            riru_api_version = core_max_api_version <= TARGET_RIRU_API ? core_max_api_version : TARGET_RIRU_API;
-            return &riru_api_version;
+RiruVersionedModuleInfo module = {
+        .moduleApiVersion = RIRU_TARGET_API,
+        .moduleInfo = {
+                .supportHide = true,
+                .version = RIRU_MODULE_VERSION_CODE,
+                .versionName = RIRU_MODULE_VERSION_NAME,
+                .onModuleLoaded = onModuleLoaded,
+                .forkAndSpecializePre = NULL,
+                .forkAndSpecializePost = NULL,
+                .forkSystemServerPre = NULL,
+                .forkSystemServerPost = nativeForkSystemServerPost,
+                .specializeAppProcessPre = NULL,
+                .specializeAppProcessPost = NULL,
         }
-        case 2: {
-            switch (riru_api_version) {
-                case 9: {
-                    module = malloc(sizeof(RiruModuleInfoV9));
-                    memset(module, 0, sizeof(*module));
+};
 
-                    module->supportHide = 1;
+EXPORT RiruVersionedModuleInfo *init(Riru *riru) {
+    if (riru->riruApiVersion < RIRU_TARGET_API) return NULL;
 
-                    module->versionName = RIRU_MODULE_VERSION_NAME;
-                    module->version = RIRU_MODULE_VERSION_CODE;
+    *riru->allowUnload = true;
 
-                    module->onModuleLoaded = &onModuleLoaded;
-                    module->shouldSkipUid = &shouldSkipUid;
-                    module->forkSystemServerPost = &nativeForkSystemServerPost;
+    magisk_path = strdup(riru->magiskModulePath);
 
-                    return module;
-                }
-                case 10: {
-                    module = malloc(sizeof(RiruModuleInfoV10));
-                    memset(module, 0, sizeof(*module));
-
-                    module->supportHide = 1;
-
-                    module->versionName = RIRU_MODULE_VERSION_NAME;
-                    module->version = RIRU_MODULE_VERSION_CODE;
-
-                    module->onModuleLoaded = &onModuleLoaded;
-                    module->shouldSkipUid = &shouldSkipUid;
-                    module->forkSystemServerPost = &nativeForkSystemServerPost;
-
-                    return module;
-                }
-                case -1: {
-                    LOGE("invalid riru api version");
-
-                    break;
-                }
-                default: {
-                    break;
-                }
-            }
-
-            return NULL;
-        }
-        case 3: {
-            free(module);
-
-            return NULL;
-        }
-        default: {
-            return NULL;
-        }
-    }
+    return &module;
 }

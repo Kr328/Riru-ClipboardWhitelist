@@ -16,12 +16,6 @@ abstract class GenerateMagiskTask : Copy() {
                     "MAGISK_VERSION_CODE" -> variant.versionCode.toString()
                     "MAGISK_AUTHOR" -> extension.author
                     "MAGISK_DESCRIPTION" -> extension.description
-                    "RIRU_NAME" -> extension.name.removePrefix("Riru - ")
-                    "RIRU_VERSION_NAME" -> variant.versionName!!
-                    "RIRU_VERSION_CODE" -> variant.versionCode.toString()
-                    "RIRU_AUTHOR" -> extension.author
-                    "RIRU_DESCRIPTION" -> extension.description
-                    "RIRU_API" -> extension.minApi.toString()
                     "RIRU_MODULE_ID" -> extension.riruId
                     "RIRU_MIN_API_VERSION" -> extension.minApi.toString()
                     "RIRU_MIN_VERSION_NAME" -> extension.minApiName

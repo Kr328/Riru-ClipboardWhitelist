@@ -12,8 +12,8 @@ android {
     compileSdkVersion(buildTargetVersion)
 
     defaultConfig {
-        minSdkVersion(buildMinVersion)
-        targetSdkVersion(buildTargetVersion)
+        minSdk = buildMinVersion
+        targetSdk = buildTargetVersion
 
         versionCode = buildVersionCode
         versionName = buildVersionName

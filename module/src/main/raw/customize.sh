@@ -15,6 +15,7 @@ fi
 extract "$ZIPFILE" 'riru.sh' "$MODPATH"
 . $MODPATH/riru.sh
 
+enforce_install_from_magisk_app
 check_riru_version
 check_architecture
 check_sdk_version
@@ -23,51 +24,38 @@ check_sdk_version
 ui_print "- Extracting module files"
 
 extract "$ZIPFILE" 'module.prop' "$MODPATH"
-extract "$ZIPFILE" 'post-fs-data.sh' "$MODPATH"
-extract "$ZIPFILE" 'service.sh' "$MODPATH"
-extract "$ZIPFILE" 'uninstall.sh' "$MODPATH"
+#extract "$ZIPFILE" 'post-fs-data.sh' "$MODPATH"
+#extract "$ZIPFILE" 'uninstall.sh' "$MODPATH"
 #extract "$ZIPFILE" 'sepolicy.rule' "$MODPATH"
+
+mkdir "$MODPATH/riru"
 
 if [ "$ARCH" = "x86" ] || [ "$ARCH" = "x64" ]; then
   ui_print "- Extracting x86 libraries"
-  extract "$ZIPFILE" "system_x86/lib/libriru_$RIRU_MODULE_ID.so" "$MODPATH"
-  mv "$MODPATH/system_x86/lib" "$MODPATH/system/lib"
+  extract "$ZIPFILE" "riru_x86/lib/libriru_$RIRU_MODULE_ID.so" "$MODPATH"
+  mv "$MODPATH/riru_x86/lib" "$MODPATH/riru/lib"
 
   if [ "$IS64BIT" = true ]; then
     ui_print "- Extracting x64 libraries"
-    extract "$ZIPFILE" "system_x86/lib64/libriru_$RIRU_MODULE_ID.so" "$MODPATH"
-    mv "$MODPATH/system_x86/lib64" "$MODPATH/system/lib64"
+    extract "$ZIPFILE" "riru_x86/lib64/libriru_$RIRU_MODULE_ID.so" "$MODPATH"
+    mv "$MODPATH/riru_x86/lib64" "$MODPATH/riru/lib64"
   fi
+  rmdir $MODPATH/riru_x86
 else
   ui_print "- Extracting arm libraries"
-  extract "$ZIPFILE" "system/lib/libriru_$RIRU_MODULE_ID.so" "$MODPATH"
+  extract "$ZIPFILE" "riru/lib/libriru_$RIRU_MODULE_ID.so" "$MODPATH"
 
   if [ "$IS64BIT" = true ]; then
     ui_print "- Extracting arm64 libraries"
-    extract "$ZIPFILE" "system/lib64/libriru_$RIRU_MODULE_ID.so" "$MODPATH"
+    extract "$ZIPFILE" "riru/lib64/libriru_$RIRU_MODULE_ID.so" "$MODPATH"
   fi
 fi
 
-ui_print "- Extracting apk & dex"
-extract "$ZIPFILE" "system/framework/boot-clipboard-whitelist.dex" "$MODPATH"
-extract "$ZIPFILE" "system/app/ClipboardWhitelist/ClipboardWhitelist.apk" "$MODPATH"
-
-# Riru files
-[ -d "$RIRU_MODULE_PATH" ] || mkdir -p "$RIRU_MODULE_PATH" || abort "! Can't create $RIRU_MODULE_PATH"
-
-# set permission just in case
-set_perm "$RIRU_PATH" 0 0 0700
-set_perm "$RIRU_PATH/modules" 0 0 0700
-set_perm "$RIRU_MODULE_PATH" 0 0 0700
-set_perm "$RIRU_MODULE_PATH/bin" 0 0 0700
-
-rm -f "$RIRU_MODULE_PATH/module.prop.new"
-extract "$ZIPFILE" 'riru/module.prop.new' "$RIRU_MODULE_PATH" true
-set_perm "$RIRU_MODULE_PATH/module.prop.new" 0 0 0600
+# extract runtime dex & apk
+ui_print "- Extracting dex"
+extract "$ZIPFILE" "runtime/runtime.dex" "$MODPATH"
+extract "$ZIPFILE" "system/priv-app/ClipboardWhitelist/ClipboardWhitelist.apk" "$MODPATH"
 
 # set permissions
 ui_print "- Setting permissions"
 set_perm_recursive "$MODPATH" 0 0 0755 0644
-
-ui_print "- Reset installation status"
-rm "$MODPATH/apk_installed"

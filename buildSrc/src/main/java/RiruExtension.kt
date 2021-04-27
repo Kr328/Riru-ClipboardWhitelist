@@ -5,7 +5,6 @@ open class RiruExtension {
     var minApiName: String = ""
     var description: String = ""
     var author: String = ""
-    var dexName: String = ""
 
     val riruId: String
         get() = id.removePrefix("riru_")
