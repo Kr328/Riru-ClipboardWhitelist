@@ -1,12 +1,9 @@
 @file:Suppress("UNUSED_VARIABLE")
 
-import java.net.URI
-
 allprojects {
     repositories {
         google()
         jcenter()
-        maven { url = URI("https://dl.bintray.com/rikkaw/Libraries") }
     }
     extra {
         val buildMinVersion: Int by extra(29)
