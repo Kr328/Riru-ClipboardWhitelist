@@ -4,7 +4,7 @@ A module of [Riru](https://github.com/RikkaApps/Riru). Allowing apps to access t
 
 ## Requirements
 
-* [Riru](https://github.com/RikkaApps/Riru) > 22.0 installed.
+* [Riru](https://github.com/RikkaApps/Riru) >= 25.0 installed.
 * Android 10+
 
 
