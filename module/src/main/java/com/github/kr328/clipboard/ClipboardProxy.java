@@ -1,7 +1,10 @@
 package com.github.kr328.clipboard;
 
+import android.app.ActivityThread;
 import android.content.ClipData;
 import android.content.ClipDescription;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.IClipboard;
 import android.content.IOnPrimaryClipChangedListener;
 import android.content.pm.IPackageManager;
@@ -9,13 +12,13 @@ import android.os.Binder;
 import android.os.Parcel;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.provider.Settings;
+import android.text.TextUtils;
 
 import com.github.kr328.clipboard.ProxyFactory.TransactHook;
 import com.github.kr328.clipboard.shared.Constants;
 
 public class ClipboardProxy extends IClipboard.Stub {
-    private final static String SHELL_PACKAGE = "com.android.shell";
-
     private final IClipboard original;
     private final WhitelistService whitelistService = new WhitelistService();
 
@@ -33,9 +36,11 @@ public class ClipboardProxy extends IClipboard.Stub {
 
         enforcePackageUid(pkg, Binder.getCallingUid(), userId);
 
-        asShell();
+        String packageName = asDefaultIME(userId);
+        if (packageName == null)
+            packageName = pkg;
 
-        return original.getPrimaryClip(SHELL_PACKAGE, userId);
+        return original.getPrimaryClip(packageName, userId);
     }
 
     @Override
@@ -46,9 +51,11 @@ public class ClipboardProxy extends IClipboard.Stub {
 
         enforcePackageUid(callingPackage, Binder.getCallingUid(), userId);
 
-        asShell();
+        String packageName = asDefaultIME(userId);
+        if (packageName == null)
+            packageName = callingPackage;
 
-        return original.getPrimaryClipDescription(SHELL_PACKAGE, userId);
+        return original.getPrimaryClipDescription(packageName, userId);
     }
 
     @Override
@@ -59,9 +66,11 @@ public class ClipboardProxy extends IClipboard.Stub {
 
         enforcePackageUid(callingPackage, Binder.getCallingUid(), userId);
 
-        asShell();
+        String packageName = asDefaultIME(userId);
+        if (packageName == null)
+            packageName = callingPackage;
 
-        return original.hasPrimaryClip(SHELL_PACKAGE, userId);
+        return original.hasPrimaryClip(packageName, userId);
     }
 
     @Override
@@ -72,9 +81,11 @@ public class ClipboardProxy extends IClipboard.Stub {
 
         enforcePackageUid(callingPackage, Binder.getCallingUid(), userId);
 
-        asShell();
+        String packageName = asDefaultIME(userId);
+        if (packageName == null)
+            packageName = callingPackage;
 
-        return original.hasClipboardText(SHELL_PACKAGE, userId);
+        return original.hasClipboardText(packageName, userId);
     }
 
     @Override
@@ -88,9 +99,11 @@ public class ClipboardProxy extends IClipboard.Stub {
 
         enforcePackageUid(callingPackage, Binder.getCallingUid(), userId);
 
-        asShell();
+        String packageName = asDefaultIME(userId);
+        if (packageName == null)
+            packageName = callingPackage;
 
-        original.addPrimaryClipChangedListener(listener, SHELL_PACKAGE, userId);
+        original.addPrimaryClipChangedListener(listener, packageName, userId);
     }
 
     @Override
@@ -104,9 +117,11 @@ public class ClipboardProxy extends IClipboard.Stub {
 
         enforcePackageUid(callingPackage, Binder.getCallingUid(), userId);
 
-        asShell();
+        String packageName = asDefaultIME(userId);
+        if (packageName == null)
+            packageName = callingPackage;
 
-        original.removePrimaryClipChangedListener(listener, SHELL_PACKAGE, userId);
+        original.removePrimaryClipChangedListener(listener, packageName, userId);
     }
 
     @Override
@@ -124,11 +139,29 @@ public class ClipboardProxy extends IClipboard.Stub {
         return super.onTransact(code, data, reply, flags);
     }
 
-    private void asShell() {
-        long token = Binder.clearCallingIdentity();
-        long shellToken = token & 0xFFFFFFFFL | ((long) (android.os.Process.SHELL_UID) << 32);
+    private String asDefaultIME(int userId) throws RemoteException {
+        IPackageManager pm = obtainPackageManager();
+        Context context = ActivityThread.currentActivityThread().getSystemContext();
 
-        Binder.restoreCallingIdentity(shellToken);
+        String componentName = $android.provider.Settings$Secure.getStringForUser(
+                context.getContentResolver(),
+                Settings.Secure.DEFAULT_INPUT_METHOD,
+                userId
+        );
+
+        if (TextUtils.isEmpty(componentName))
+            return null;
+
+        String packageName = ComponentName.unflattenFromString(componentName).getPackageName();
+
+        int uid = pm.getPackageUid(packageName, 0, userId);
+
+        long token = Binder.clearCallingIdentity();
+        long newToken = token & 0xFFFFFFFFL | ((long) uid << 32);
+
+        Binder.restoreCallingIdentity(newToken);
+
+        return packageName;
     }
 
     private void enforcePackageUid(String packageName, int uid, int userId) throws RemoteException {
