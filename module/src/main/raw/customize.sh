@@ -52,7 +52,7 @@ else
 fi
 
 # extract runtime dex & apk
-ui_print "- Extracting dex"
+ui_print "- Extracting dex & apk"
 extract "$ZIPFILE" "runtime/runtime.dex" "$MODPATH"
 extract "$ZIPFILE" "system/priv-app/ClipboardWhitelist/ClipboardWhitelist.apk" "$MODPATH"
 
