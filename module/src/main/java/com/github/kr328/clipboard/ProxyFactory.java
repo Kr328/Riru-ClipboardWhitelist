@@ -16,8 +16,6 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 public class ProxyFactory {
@@ -44,7 +42,7 @@ public class ProxyFactory {
                 final int count = codes.size();
 
                 if (code.length > 0) {
-                    for ( int c : code ) {
+                    for (int c : code) {
                         codes.add(c);
                     }
                 } else {

@@ -3,7 +3,6 @@ package com.github.kr328.clipboard;
 import android.util.Log;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,8 +11,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static java.nio.file.StandardOpenOption.*;
 import static com.github.kr328.clipboard.shared.Constants.TAG;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.nio.file.StandardOpenOption.WRITE;
 
 public class DataStore {
     public static final String DATA_PATH = "/data/misc/clipboard/";
