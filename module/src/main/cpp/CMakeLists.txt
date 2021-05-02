@@ -32,6 +32,7 @@ add_definitions(
         "-DRIRU_MODULE_ID=\"${RIRU_MODULE_ID}\""
         "-DRIRU_MODULE_VERSION_NAME=\"${RIRU_MODULE_VERSION_NAME}\""
         "-DRIRU_MODULE_VERSION_CODE=${RIRU_MODULE_VERSION_CODE}"
+        "-DRIRU_MODULE"
 )
 
 add_library(riru_${RIRU_MODULE_ID} SHARED main.c)
