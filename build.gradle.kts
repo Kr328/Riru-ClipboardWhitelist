@@ -9,8 +9,8 @@ allprojects {
         val buildMinVersion: Int by extra(29)
         val buildTargetVersion: Int by extra(30)
 
-        val buildVersionCode: Int by extra(8)
-        val buildVersionName: String by extra("v8")
+        val buildVersionCode: Int by extra(9)
+        val buildVersionName: String by extra("v9")
 
         val buildNdkVersion: String by extra("23.0.7123448")
     }
