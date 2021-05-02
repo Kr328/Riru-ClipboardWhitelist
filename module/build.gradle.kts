@@ -83,7 +83,7 @@ dependencies {
 
     implementation(project(":shared"))
 
-    implementation("dev.rikka.ndk:riru:25.0.0")
+    implementation("dev.rikka.ndk:riru:25.0.1")
 }
 
 afterEvaluate {
