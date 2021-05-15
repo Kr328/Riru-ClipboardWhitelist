@@ -3,7 +3,7 @@
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
     extra {
         val buildMinVersion: Int by extra(29)

@@ -1,17 +1,16 @@
 plugins {
-    kotlin("jvm") version "1.4.32"
+    kotlin("jvm") version "1.5.0"
     `java-gradle-plugin`
 }
 
 repositories {
     mavenCentral()
     google()
-    jcenter()
 }
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("com.android.tools.build:gradle:4.1.3") {
+    implementation("com.android.tools.build:gradle:4.2.1") {
         exclude("org.jetbrains.kotlin", "kotlin-stdlib-jdk8")
         exclude("org.jetbrains.kotlin", "kotlin-stdlib-jdk7")
         exclude("org.jetbrains.kotlin", "kotlin-reflect")
