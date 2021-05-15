@@ -1,5 +1,6 @@
 package com.github.kr328.clipboard;
 
+import android.annotation.SuppressLint;
 import android.os.IBinder;
 import android.os.IServiceManager;
 import android.os.ServiceManager;
@@ -9,6 +10,8 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+@SuppressWarnings("JavaReflectionMemberAccess")
+@SuppressLint("DiscouragedPrivateApi")
 public abstract class ServiceProxy implements InvocationHandler {
     private IServiceManager original;
 
