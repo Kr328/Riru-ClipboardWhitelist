@@ -29,11 +29,12 @@ zygote {
 androidComponents {
     onVariants {
         val name = it.name
+        val flavorName = it.flavorName!!
         val buildType = it.buildType!!
 
         afterEvaluate {
             (tasks[PackageMagiskTask.taskName(name)] as Zip).apply {
-                archiveBaseName.set("clipboard-whitelist-${android.defaultConfig.versionName}")
+                archiveBaseName.set("$flavorName-clipboard-whitelist-${android.defaultConfig.versionName}")
 
                 val appApk = project(":app").buildDir
                     .resolve("outputs/apk/${buildType}/app-${buildType}.apk")
