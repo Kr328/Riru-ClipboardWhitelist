@@ -1,80 +1,53 @@
+import com.github.kr328.zloader.gradle.ZygoteLoader
+import com.github.kr328.zloader.gradle.tasks.PackageMagiskTask
+import com.github.kr328.zloader.gradle.util.toCapitalized
+
 plugins {
     id("com.android.application")
-    id("hideapi-redefine")
-    id("riru")
+    id("zygote-loader")
+    id("dev.rikka.tools.refine.gradle-plugin")
 }
 
-val buildMinVersion: Int by extra
-val buildTargetVersion: Int by extra
+zygote {
+    val moduleId = "clipboard_whitelist"
+    val moduleName = "Clipboard Whitelist"
+    val moduleDescription = "Allow apps access clipboard in background."
+    val moduleAuthor = "Kr328"
+    val moduleEntrypoint = "com.github.kr328.clipboard.Injector"
 
-val buildVersionCode: Int by extra
-val buildVersionName: String by extra
+    packages(ZygoteLoader.PACKAGE_SYSTEM_SERVER)
 
-val buildNdkVersion: String by extra
-
-riru {
-    id = "riru_clipboard_whitelist"
-    name = "Riru - Clipboard Whitelist"
-    minApi = 28
-    minApiName = "25.0.0"
-    description = "A module of Riru. Add clipboard whitelist to Android 10."
-    author = "Kr328"
+    riru {
+        id = "riru_$moduleId"
+        name = "Riru - $moduleName"
+        author = moduleAuthor
+        description = moduleDescription
+        entrypoint = moduleEntrypoint
+    }
 }
 
-android {
-    compileSdkVersion(buildTargetVersion)
+androidComponents {
+    onVariants {
+        val name = it.name
+        val buildType = it.buildType!!
 
-    ndkVersion = buildNdkVersion
+        afterEvaluate {
+            (tasks[PackageMagiskTask.taskName(name)] as Zip).apply {
+                archiveBaseName.set("clipboard-whitelist-${android.defaultConfig.versionName}")
 
-    defaultConfig {
-        applicationId = "com.github.kr328.clipboard.module"
+                val appApk = project(":app").buildDir
+                    .resolve("outputs/apk/${buildType}/app-${buildType}.apk")
 
-        minSdk = buildMinVersion
-        targetSdk = buildTargetVersion
+                from(appApk) {
+                    into("system/app/ClipboardWhitelist")
+                    rename {
+                        "ClipboardWhitelist.apk"
+                    }
+                }
 
-        versionCode = buildVersionCode
-        versionName = buildVersionName
-
-        multiDexEnabled = false
-
-        externalNativeBuild {
-            cmake {
-                arguments(
-                        "-DRIRU_API:INTEGER=${riru.minApi}",
-                        "-DRIRU_NAME:STRING=${riru.name}",
-                        "-DRIRU_MODULE_ID:STRING=${riru.riruId}",
-                        "-DRIRU_MODULE_VERSION_CODE:INTEGER=$versionCode",
-                        "-DRIRU_MODULE_VERSION_NAME:STRING=$versionName"
-                )
+                dependsOn(project(":app").tasks["assemble${buildType.toCapitalized()}"])
             }
         }
-    }
-
-    buildFeatures {
-        buildConfig = false
-        prefab = true
-    }
-
-    buildTypes {
-        named("release") {
-            isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    externalNativeBuild {
-        cmake {
-            path = file("src/main/cpp/CMakeLists.txt")
-        }
-    }
-
-    applicationVariants.all {
-
     }
 }
 
@@ -83,26 +56,5 @@ dependencies {
 
     implementation(project(":shared"))
 
-    implementation("dev.rikka.ndk:riru:25.0.1")
-}
-
-afterEvaluate {
-    android.applicationVariants.forEach {
-        val cName = it.name.capitalize()
-
-        val cp = tasks.register("copyModuleApk$cName", Copy::class.java) {
-            from(project(":app").buildDir
-                .resolve("outputs/apk/${it.name}/app-${it.name}.apk"))
-
-            into(generatedMagiskDir(it)
-                .resolve("system/priv-app/ClipboardWhitelist"))
-
-            rename {
-                "ClipboardWhitelist.apk"
-            }
-        }
-
-        tasks["mergeMagisk$cName"].dependsOn(cp)
-        cp.get().dependsOn(project(":app").tasks["assemble$cName"])
-    }
+    implementation(deps.refine.runtime)
 }

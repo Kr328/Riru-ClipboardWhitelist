@@ -49,7 +49,7 @@ public class InstalledActivity extends Activity {
                 114514,
                 new Intent(this, MainActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
-                PendingIntent.FLAG_UPDATE_CURRENT
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
         Notification notification = new Notification.Builder(this, NOTIFICATION_CHANNEL)

@@ -1,8 +1,11 @@
-package $android.provider;
+package android.provider;
 
 import android.content.ContentResolver;
 
-public class Settings$Secure {
+import dev.rikka.tools.refine.RefineAs;
+
+@RefineAs(Settings.Secure.class)
+public class SettingsSecure {
     public static String getStringForUser(ContentResolver resolver, String name, int userHandle) {
         throw new IllegalArgumentException("Stub!");
     }

@@ -1,17 +1,19 @@
 package com.github.kr328.clipboard;
 
+import static com.github.kr328.clipboard.shared.Constants.TAG;
+
 import android.content.Context;
 import android.content.IClipboard;
 import android.os.IBinder;
 import android.os.Process;
 import android.util.Log;
 
-import static com.github.kr328.clipboard.shared.Constants.TAG;
+import java.util.Properties;
 
 @SuppressWarnings({"unused", "RedundantSuppression"})
 public class Injector extends ServiceProxy {
-    public static void inject(String argument) {
-        Log.i(TAG, String.format("Uid = %d Pid = %d", Process.myUid(), Process.myPid()));
+    public static void main(String processName, Properties properties) {
+        Log.i(TAG, String.format("Process = %s Uid = %d Pid = %d", processName, Process.myUid(), Process.myPid()));
 
         Injector injector = new Injector();
 

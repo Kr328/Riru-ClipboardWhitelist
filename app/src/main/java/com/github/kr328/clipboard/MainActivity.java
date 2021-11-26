@@ -67,7 +67,7 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
-        if ( item.getItemId() == R.id.systemApps ) {
+        if (item.getItemId() == R.id.systemApps) {
             item.setChecked(!item.isChecked());
 
             showSystemApps = item.isChecked();
@@ -164,7 +164,8 @@ public class MainActivity extends Activity {
                 .setTitle(R.string.notice)
                 .setMessage(R.string.application_clipboard_detect)
                 .setCancelable(false)
-                .setPositiveButton(R.string.ok, (d, w) -> {})
+                .setPositiveButton(R.string.ok, (d, w) -> {
+                })
                 .show();
 
         getSharedPreferences("ui", MODE_PRIVATE).edit()

@@ -1,5 +1,10 @@
 package com.github.kr328.clipboard;
 
+import static com.github.kr328.clipboard.shared.Constants.TAG;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
+import static java.nio.file.StandardOpenOption.WRITE;
+
 import android.util.Log;
 
 import java.io.File;
@@ -10,11 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import static com.github.kr328.clipboard.shared.Constants.TAG;
-import static java.nio.file.StandardOpenOption.CREATE;
-import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
-import static java.nio.file.StandardOpenOption.WRITE;
 
 public class DataStore {
     public static final String DATA_PATH = "/data/misc/clipboard/";

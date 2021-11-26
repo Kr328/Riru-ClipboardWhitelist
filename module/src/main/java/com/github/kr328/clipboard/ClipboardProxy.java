@@ -7,18 +7,20 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.IClipboard;
 import android.content.IOnPrimaryClipChangedListener;
-import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManagerHidden;
 import android.os.Binder;
 import android.os.Parcel;
 import android.os.RemoteException;
 import android.provider.Settings;
+import android.provider.SettingsSecure;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.github.kr328.clipboard.ProxyFactory.TransactHook;
 import com.github.kr328.clipboard.shared.Constants;
 
-import $android.content.pm.PackageManager;
+import dev.rikka.tools.refine.Refine;
 
 public class ClipboardProxy extends IClipboard.Stub {
     private final IClipboard original;
@@ -109,13 +111,13 @@ public class ClipboardProxy extends IClipboard.Stub {
             if (context == null)
                 return false;
 
-            PackageManager pm = Unsafe.unsafeCast(context.getPackageManager());
+            PackageManagerHidden pm = Refine.unsafeCast(context.getPackageManager());
 
             try {
                 if (pm.getPackageUidAsUser(Constants.APP_PACKAGE_NAME, 0)
                         != Binder.getCallingUid())
                     return super.onTransact(code, data, reply, flags);
-            } catch (NameNotFoundException e) {
+            } catch (PackageManager.NameNotFoundException e) {
                 return false;
             }
 
@@ -134,12 +136,12 @@ public class ClipboardProxy extends IClipboard.Stub {
             if (context == null)
                 return callingPkg;
 
-            PackageManager pm = Unsafe.unsafeCast(context.getPackageManager());
+            PackageManagerHidden pm = Refine.unsafeCast(context.getPackageManager());
 
             if (pm.getPackageUidAsUser(callingPkg, userId) != Binder.getCallingUid())
                 return callingPkg;
 
-            String componentName = $android.provider.Settings$Secure.getStringForUser(
+            String componentName = SettingsSecure.getStringForUser(
                     context.getContentResolver(),
                     Settings.Secure.DEFAULT_INPUT_METHOD,
                     userId
