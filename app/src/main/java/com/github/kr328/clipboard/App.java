@@ -2,6 +2,7 @@ package com.github.kr328.clipboard;
 
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.AdaptiveIconDrawable;
 import android.graphics.drawable.Drawable;
 
 public final class App implements Comparable<App> {
@@ -19,7 +20,18 @@ public final class App implements Comparable<App> {
     }
 
     public static App fromApplicationInfo(ApplicationInfo info, PackageManager packageManager, boolean selected) {
-        return new App(info.loadIcon(packageManager), info.packageName, info.loadLabel(packageManager).toString(), selected);
+        return new App(getForeground(info.loadIcon(packageManager)), info.packageName, info.loadLabel(packageManager).toString(), selected);
+    }
+
+    private static Drawable getForeground(Drawable drawable) {
+        if (drawable instanceof AdaptiveIconDrawable) {
+            final Drawable foreground = ((AdaptiveIconDrawable) drawable).getForeground();
+            if (foreground != null) {
+                return foreground;
+            }
+        }
+
+        return drawable;
     }
 
     public Drawable getIcon() {

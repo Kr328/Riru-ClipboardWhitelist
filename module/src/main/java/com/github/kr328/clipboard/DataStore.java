@@ -1,24 +1,25 @@
 package com.github.kr328.clipboard;
 
-import static com.github.kr328.clipboard.shared.Constants.TAG;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 
-import android.util.Log;
+import com.github.kr328.clipboard.shared.Log;
 
-import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 public class DataStore {
-    public static final String DATA_PATH = "/data/misc/clipboard/";
-    public static final String DATA_FILE = "whitelist.list";
+    public static final String DATA_PATH = "/data/misc/clipboard/whitelist.list";
 
     public final static DataStore instance = new DataStore();
 
@@ -26,7 +27,7 @@ public class DataStore {
 
     private DataStore() {
         try {
-            List<String> data = Files.readAllLines(Paths.get(DATA_PATH, DATA_FILE));
+            List<String> data = Files.readAllLines(Paths.get(DATA_PATH));
 
             packages.clear();
 
@@ -34,12 +35,14 @@ public class DataStore {
                     .filter(Objects::nonNull)
                     .map(String::trim)
                     .filter(s -> !s.isEmpty())
-                    .peek(s -> Log.i(TAG, "package:" + s))
+                    .peek(s -> Log.i("package:" + s))
                     .forEach(packages::add);
 
-            Log.i(TAG, "Reloaded");
+            Log.i("Reloaded");
         } catch (IOException e) {
-            Log.w(TAG, "Load config file " + DATA_PATH + DATA_FILE + " failure", e);
+            if (!(e instanceof FileNotFoundException)) {
+                Log.w("Load config file " + DATA_PATH + ": " + e, e);
+            }
         }
     }
 
@@ -65,12 +68,15 @@ public class DataStore {
 
     private void writePackages() {
         try {
-            //noinspection ResultOfMethodCallIgnored
-            new File(DATA_PATH).mkdirs();
+            final FileAttribute<Set<PosixFilePermission>> permissions = PosixFilePermissions.asFileAttribute(
+                    PosixFilePermissions.fromString("rwx------")
+            );
 
-            Files.write(Paths.get(DATA_PATH, DATA_FILE), packages, WRITE, CREATE, TRUNCATE_EXISTING);
+            Files.createDirectories(Paths.get(DATA_PATH).getParent(), permissions);
+
+            Files.write(Paths.get(DATA_PATH), packages, WRITE, CREATE, TRUNCATE_EXISTING);
         } catch (IOException e) {
-            Log.w(TAG, "Save whitelist.list failure", e);
+            Log.w("Save whitelist.list: " + e, e);
         }
     }
 }

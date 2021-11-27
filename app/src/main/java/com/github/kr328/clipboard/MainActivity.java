@@ -148,12 +148,13 @@ public class MainActivity extends Activity {
             content = R.string.unknown_error_description;
         }
 
-        new AlertDialog.Builder(this)
+        runOnUiThread(() -> new AlertDialog.Builder(this)
                 .setTitle(title)
                 .setMessage(content)
                 .setCancelable(false)
                 .setPositiveButton(R.string.ok, (dialog, which) -> finish())
-                .show();
+                .show()
+        );
     }
 
     private void showNotice() {
