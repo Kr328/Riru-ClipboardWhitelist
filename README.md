@@ -20,17 +20,16 @@ Allowing apps to access the clipboard in the background on Android 10.
 2. Configure local.properties 
 
    ```properties
-   ndk.dir=/path/to/android/ndk
    sdk.dir=/path/to/android/sdk
    ```
 
 3. Configure keystore.properties
 
    ```properties
-   keyAlias=<your key alias>
-   keyPassword=<your key password>
-   storeFile=/path/to/your/store/file
-   storePassword=<your store password>
+   keystore.path=/path/to/your/keystore.jks
+   keystore.password=<keystore password>
+   key.alias=<key alias>
+   key.password=<key password>
    ```
 
 4. Run build command 
@@ -39,4 +38,4 @@ Allowing apps to access the clipboard in the background on Android 10.
     ./gradlew module:assembleRelease
     ```
     
-4. Pick `riru-clipboard-whitelist-release.zip` from `module/build/outputs`
+4. Pick `riru-clipboard-whitelist-<version>.zip` from `module/build/outputs/magisk/<variant>`
