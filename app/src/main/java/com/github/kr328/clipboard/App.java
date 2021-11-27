@@ -25,9 +25,10 @@ public final class App implements Comparable<App> {
 
     private static Drawable getForeground(Drawable drawable) {
         if (drawable instanceof AdaptiveIconDrawable) {
-            final Drawable foreground = ((AdaptiveIconDrawable) drawable).getForeground();
-            if (foreground != null) {
-                return foreground;
+            final AdaptiveIconDrawable adaptive = (AdaptiveIconDrawable) drawable;
+
+            if (adaptive.getBackground() == null) {
+                return adaptive.getForeground();
             }
         }
 
