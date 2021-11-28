@@ -12,6 +12,7 @@ dependencyResolutionManagement {
             val agp = "7.0.3"
             val zloader = "1.5"
             val refine = "3.0.3"
+            val magic = "1.1"
 
             alias("build-android").to("com.android.tools.build:gradle:$agp")
             alias("build-zloader").to("com.github.kr328.zloader:gradle-plugin:$zloader")
@@ -19,6 +20,7 @@ dependencyResolutionManagement {
             alias("refine-processor").to("dev.rikka.tools.refine:annotation-processor:$refine")
             alias("refine-annotation").to("dev.rikka.tools.refine:annotation:$refine")
             alias("refine-runtime").to("dev.rikka.tools.refine:runtime:$refine")
+            alias("magic-library").to("com.github.kr328.magic:library:$magic")
         }
     }
 }

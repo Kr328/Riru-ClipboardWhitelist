@@ -8,7 +8,7 @@ import android.os.UserManagerHidden;
 import com.github.kr328.clipboard.shared.Constants;
 import com.github.kr328.clipboard.shared.IClipboardWhitelist;
 import com.github.kr328.clipboard.shared.Log;
-import com.github.kr328.clipboard.util.BinderUtil;
+import com.github.kr328.magic.util.BinderUtils;
 
 public class WhitelistService extends IClipboardWhitelist.Stub {
     @Override
@@ -37,7 +37,7 @@ public class WhitelistService extends IClipboardWhitelist.Stub {
 
     private void forceStopPackage(String packageName) {
         try {
-            BinderUtil.withEvaluated(() -> {
+            BinderUtils.withEvaluated(() -> {
                 final ActivityThread thread = ActivityThread.currentActivityThread();
                 if (thread == null)
                     throw new IllegalStateException("System unavailable");

@@ -18,8 +18,8 @@ import android.text.TextUtils;
 
 import com.github.kr328.clipboard.shared.Constants;
 import com.github.kr328.clipboard.shared.Log;
-import com.github.kr328.clipboard.util.BinderUtil;
-import com.github.kr328.clipboard.util.ProxyFactory.TransactHook;
+import com.github.kr328.magic.proxy.AIDLProxy.TransactProxy;
+import com.github.kr328.magic.util.BinderUtils;
 
 import dev.rikka.tools.refine.Refine;
 
@@ -32,7 +32,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     }
 
     @Override
-    @TransactHook
+    @TransactProxy
     public ClipData getPrimaryClip(String callingPackage, int userId) throws RemoteException {
         final String packageName = asDefaultIME(callingPackage, userId);
 
@@ -40,7 +40,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     }
 
     @Override
-    @TransactHook
+    @TransactProxy
     public ClipDescription getPrimaryClipDescription(String callingPackage, int userId) throws RemoteException {
         final String packageName = asDefaultIME(callingPackage, userId);
 
@@ -48,7 +48,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     }
 
     @Override
-    @TransactHook
+    @TransactProxy
     public boolean hasPrimaryClip(String callingPackage, int userId) throws RemoteException {
         final String packageName = asDefaultIME(callingPackage, userId);
 
@@ -56,7 +56,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     }
 
     @Override
-    @TransactHook
+    @TransactProxy
     public boolean hasClipboardText(String callingPackage, int userId) throws RemoteException {
         final String packageName = asDefaultIME(callingPackage, userId);
 
@@ -64,7 +64,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     }
 
     @Override
-    @TransactHook
+    @TransactProxy
     public void addPrimaryClipChangedListener(IOnPrimaryClipChangedListener listener, String callingPackage, int userId) throws RemoteException {
         final String packageName = asDefaultIME(callingPackage, userId);
 
@@ -72,7 +72,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     }
 
     @Override
-    @TransactHook
+    @TransactProxy
     public void removePrimaryClipChangedListener(IOnPrimaryClipChangedListener listener, String callingPackage, int userId) throws RemoteException {
         final String packageName = asDefaultIME(callingPackage, userId);
 
@@ -80,7 +80,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     }
 
     @Override
-    @TransactHook(Constants.TRANSACT_CODE_GET_SERVICE)
+    @TransactProxy(Constants.TRANSACT_CODE_GET_SERVICE)
     public boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
         if (Constants.TRANSACT_CODE_GET_SERVICE == code) {
             final Context context = ActivityThread.currentActivityThread().getSystemContext();
@@ -122,7 +122,7 @@ public class ClipboardProxy extends IClipboard.Stub {
             if (pm.getPackageUidAsUser(callingPkg, userId) != Binder.getCallingUid())
                 return callingPkg;
 
-            final String componentName = BinderUtil.withEvaluated(() ->
+            final String componentName = BinderUtils.withEvaluated(() ->
                     SettingsSecure.getStringForUser(
                             context.getContentResolver(),
                             Settings.Secure.DEFAULT_INPUT_METHOD,
@@ -135,7 +135,7 @@ public class ClipboardProxy extends IClipboard.Stub {
 
             final String packageName = ComponentName.unflattenFromString(componentName).getPackageName();
 
-            final int targetUid = BinderUtil.withEvaluated(() -> pm.getPackageUidAsUser(packageName, userId));
+            final int targetUid = BinderUtils.withEvaluated(() -> pm.getPackageUidAsUser(packageName, userId));
 
             final long token = Binder.clearCallingIdentity();
             final long newToken = token & 0xFFFFFFFFL | ((long) targetUid << 32);

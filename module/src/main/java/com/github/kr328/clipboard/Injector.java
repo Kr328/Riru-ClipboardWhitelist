@@ -3,17 +3,16 @@ package com.github.kr328.clipboard;
 import android.content.Context;
 import android.content.IClipboard;
 import android.os.Binder;
-import android.os.IBinder;
 import android.os.Process;
 
 import com.github.kr328.clipboard.shared.Log;
-import com.github.kr328.clipboard.util.ProxyFactory;
-import com.github.kr328.clipboard.util.ServiceProxy;
+import com.github.kr328.magic.proxy.AIDLProxy;
+import com.github.kr328.magic.proxy.ServiceManagerProxy;
 import com.github.kr328.zloader.ZygoteLoader;
 
 import java.util.Properties;
 
-public class Injector extends ServiceProxy {
+public class Injector {
     @SuppressWarnings("unused")
     public static void main(String processName, Properties properties) {
         Log.i("Injected into " + processName);
@@ -24,27 +23,29 @@ public class Injector extends ServiceProxy {
             return;
         }
 
-        Injector injector = new Injector();
-
         try {
-            injector.install();
+            new ServiceManagerProxy.Builder()
+                    .setAddServiceFilter(Injector::replaceService)
+                    .build()
+                    .install();
 
             Log.i("Inject successfully");
-        } catch (Exception e) {
+        } catch (Throwable e) {
             Log.e("Inject: " + e, e);
         }
     }
 
-    @Override
-    protected IBinder onAddService(String name, IBinder service) {
+    private static Binder replaceService(String name, Binder service) {
         if (Context.CLIPBOARD_SERVICE.equals(name)) {
             try {
-                return ProxyFactory.instance((Binder) service, new ClipboardProxy(IClipboard.Stub.asInterface(service)));
-            } catch (Exception e) {
+                final IClipboard original = IClipboard.Stub.asInterface(service);
+
+                return AIDLProxy.newServer(IClipboard.class, original, new ClipboardProxy(original));
+            } catch (Throwable e) {
                 Log.e("Proxy clipboard: " + e, e);
             }
         }
 
-        return super.onAddService(name, service);
+        return service;
     }
 }

@@ -58,4 +58,5 @@ dependencies {
     implementation(project(":shared"))
 
     implementation(deps.refine.runtime)
+    implementation(deps.magic.library)
 }

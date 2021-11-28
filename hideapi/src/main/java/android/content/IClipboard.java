@@ -2,9 +2,10 @@ package android.content;
 
 import android.os.Binder;
 import android.os.IBinder;
+import android.os.IInterface;
 import android.os.RemoteException;
 
-public interface IClipboard {
+public interface IClipboard extends IInterface {
     ClipData getPrimaryClip(String pkg, int userId) throws RemoteException;
 
     ClipDescription getPrimaryClipDescription(String callingPackage, int userId) throws RemoteException;
@@ -22,6 +23,11 @@ public interface IClipboard {
     abstract class Stub extends Binder implements IClipboard {
         public static IClipboard asInterface(IBinder binder) {
             throw new IllegalArgumentException("Stub!");
+        }
+
+        @Override
+        public IBinder asBinder() {
+            throw new IllegalArgumentException("Stub");
         }
     }
 }
