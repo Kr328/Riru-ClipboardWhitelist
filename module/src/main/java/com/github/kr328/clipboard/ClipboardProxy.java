@@ -18,12 +18,17 @@ import android.text.TextUtils;
 
 import com.github.kr328.clipboard.shared.Constants;
 import com.github.kr328.clipboard.shared.Log;
-import com.github.kr328.magic.proxy.AIDLProxy.TransactProxy;
+import com.github.kr328.magic.aidl.ServerProxy;
+import com.github.kr328.magic.aidl.ServerProxyFactory;
+import com.github.kr328.magic.aidl.TransactProxy;
 import com.github.kr328.magic.util.BinderUtils;
 
 import dev.rikka.tools.refine.Refine;
 
 public class ClipboardProxy extends IClipboard.Stub {
+    public final static ServerProxyFactory<IClipboard, ClipboardProxy> FACTORY =
+            ServerProxy.mustCreateFactory(IClipboard.class, ClipboardProxy.class, false);
+
     private final IClipboard original;
     private final WhitelistService whitelistService = new WhitelistService();
 

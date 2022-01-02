@@ -9,10 +9,10 @@ include(":shared", ":hideapi", ":module", ":app")
 dependencyResolutionManagement {
     versionCatalogs {
         create("deps") {
-            val agp = "7.0.3"
-            val zloader = "1.5"
+            val agp = "7.0.4"
+            val zloader = "1.6"
             val refine = "3.0.3"
-            val magic = "1.1"
+            val magic = "1.3"
 
             alias("build-android").to("com.android.tools.build:gradle:$agp")
             alias("build-zloader").to("com.github.kr328.zloader:gradle-plugin:$zloader")

@@ -23,5 +23,5 @@
 -dontobfuscate
 
 -keep class com.github.kr328.clipboard.Injector {
-    public static void main(java.lang.String, java.util.Properties);
+    public static void main(...);
 }

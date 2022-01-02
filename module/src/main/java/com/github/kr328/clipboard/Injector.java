@@ -6,20 +6,17 @@ import android.os.Binder;
 import android.os.Process;
 
 import com.github.kr328.clipboard.shared.Log;
-import com.github.kr328.magic.proxy.AIDLProxy;
-import com.github.kr328.magic.proxy.ServiceManagerProxy;
+import com.github.kr328.magic.services.ServiceManagerProxy;
 import com.github.kr328.zloader.ZygoteLoader;
-
-import java.util.Properties;
 
 public class Injector {
     @SuppressWarnings("unused")
-    public static void main(String processName, Properties properties) {
-        Log.i("Injected into " + processName);
+    public static void main() {
+        Log.i("Injected into " + ZygoteLoader.getPackageName());
         Log.i("Uid " + Process.myUid());
         Log.i("Pid " + Process.myPid());
 
-        if (!ZygoteLoader.PACKAGE_SYSTEM_SERVER.equals(processName)) {
+        if (!ZygoteLoader.PACKAGE_SYSTEM_SERVER.equals(ZygoteLoader.getPackageName())) {
             return;
         }
 
@@ -37,12 +34,14 @@ public class Injector {
 
     private static Binder replaceService(String name, Binder service) {
         if (Context.CLIPBOARD_SERVICE.equals(name)) {
+            Log.i("Replacing clipboard");
+
             try {
                 final IClipboard original = IClipboard.Stub.asInterface(service);
 
-                return AIDLProxy.newServer(IClipboard.class, original, new ClipboardProxy(original));
+                return ClipboardProxy.FACTORY.create(original, new ClipboardProxy(original));
             } catch (Throwable e) {
-                Log.e("Proxy clipboard: " + e, e);
+                Log.e("Replacing clipboard: " + e, e);
             }
         }
 
