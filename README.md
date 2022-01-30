@@ -1,6 +1,6 @@
 # Riru - Clipboard Whitelist
 
-A module of [Riru](https://github.com/RikkaApps/Riru). Allowing apps to access the clipboard in the background on Android 10.
+A module of [Riru](https://github.com/RikkaApps/Riru)/[Zygisk](https://github.com/topjohnwu/zygisk-module-sample). Allowing apps to access the clipboard in the background on Android 10.
 
 ## Requirements
 
