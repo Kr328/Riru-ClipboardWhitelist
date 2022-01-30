@@ -24,6 +24,15 @@ zygote {
         entrypoint = moduleEntrypoint
         archiveName = "riru-${moduleId.replace('_', '-')}-${android.defaultConfig.versionName}"
     }
+
+    zygisk {
+        id = "zygisk_$moduleId"
+        name = "Zygisk - $moduleName"
+        author = moduleAuthor
+        description = moduleDescription
+        entrypoint = moduleEntrypoint
+        archiveName = "zygisk-${moduleId.replace('_', '-')}-${android.defaultConfig.versionName}"
+    }
 }
 
 androidComponents {
