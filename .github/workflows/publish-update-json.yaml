@@ -1,0 +1,78 @@
+name: Publish Update Json
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  PublishUpdateJson:
+    name: PublishUpdateJson
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Dependencies
+        run: |
+          sudo apt-get install -y jq wget unzip dos2unix
+      - name: Generate Update Json
+        run: |
+          #!/bin/bash
+
+          # from https://github.com/topjohnwu/Magisk/blob/70415a396a4e1eae85d74672c11f6b675a8edff1/scripts/util_functions.sh#L30-L36
+          grep_prop() {
+            local REGEX="s/^$1=//p"
+            shift
+            local FILES=$@
+            [ -z "$FILES" ] && FILES='/system/build.prop'
+            cat $FILES 2>/dev/null | dos2unix | sed -n "$REGEX" | head -n 1
+          }
+
+          mkdir -p assets
+          mkdir -p publish
+
+          publish_root="publish"
+          count=0
+
+          echo "Fetching release assets"
+
+          wget -O - "${{ github.event.release.assets_url }}" | jq -r ".[].browser_download_url" | while read -r url
+          do
+              echo "Processing $url"
+
+              file_name="assets/$count.zip"
+              extract_root="assets/$count"
+
+              echo "Downloading $file_name"
+
+              wget -O "$file_name" "$url"
+
+              echo "Extract module $file_name to $extract_root"
+
+              unzip -u -d "$extract_root" "$file_name" module.prop
+
+              id="$(grep_prop id "$extract_root/module.prop")"
+              version="$(grep_prop version "$extract_root/module.prop")"
+              versionCode="$(grep_prop versionCode "$extract_root/module.prop")"
+              zipUrl="$url"
+              changelog="${{ github.event.release.html_url }}"
+
+              echo "-------- Module properties --------"
+              echo "id = $id"
+              echo "version = $version"
+              echo "versionCode = $versionCode"
+              echo "zipUrl = $zipUrl"
+              echo "changelog = $changelog"
+
+              if [[ -z "$id" || -z "$version" || -z "$versionCode" || -z "$zipUrl" || -z "$changelog" ]]; then
+                  echo "Invalid module.prop"
+                  exit 255
+              fi
+
+              printf '{"version":"%s","versionCode":%d,"zipUrl":"%s","changelog":"%s"}' "$version" "$versionCode" "$zipUrl" "$changelog" > "$publish_root/$id.json"
+
+              (( count++ )) || true
+          done
+      - name: Upload Json
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          github_token: ${{ github.token }}
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./publish/*.json
