@@ -9,8 +9,8 @@ include(":shared", ":hideapi", ":module", ":app")
 dependencyResolutionManagement {
     versionCatalogs {
         create("deps") {
-            val agp = "7.0.4"
-            val zloader = "1.7"
+            val agp = "7.1.0"
+            val zloader = "1.8"
             val refine = "3.0.3"
             val magic = "1.4"
 
