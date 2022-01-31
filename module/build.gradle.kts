@@ -44,17 +44,15 @@ androidComponents {
 
         afterEvaluate {
             (tasks["packageMagisk${name.toCapitalized()}"] as Zip).apply {
-                val appApk = project(":app").buildDir
-                    .resolve("outputs/apk/${buildType}/app-${buildType}.apk")
+                dependsOn(project(":app").tasks["assemble${buildType.toCapitalized()}"])
 
-                from(appApk) {
+                from(project(":app").extra["apk$buildType"]!!) {
                     into("system/app/ClipboardWhitelist")
+                    include("*.apk")
                     rename {
                         "ClipboardWhitelist.apk"
                     }
                 }
-
-                dependsOn(project(":app").tasks["assemble${buildType.toCapitalized()}"])
             }
         }
     }
