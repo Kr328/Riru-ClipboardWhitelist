@@ -5,6 +5,7 @@ import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 
 import com.github.kr328.clipboard.shared.Log;
+import com.github.kr328.zloader.ZygoteLoader;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -19,13 +20,15 @@ import java.util.Objects;
 import java.util.Set;
 
 public class DataStore {
-    public static final String DATA_PATH = "/data/misc/clipboard/whitelist.list";
+    public static final String DATA_PATH = ZygoteLoader.getDataDirectory() + "/whitelist.list";
 
     public final static DataStore instance = new DataStore();
 
     private final Set<String> packages = new HashSet<>();
 
     private DataStore() {
+        Log.i("Load data from " + DATA_PATH);
+
         try {
             List<String> data = Files.readAllLines(Paths.get(DATA_PATH));
 
