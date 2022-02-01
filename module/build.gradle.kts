@@ -18,22 +18,22 @@ zygote {
 
     riru {
         id = "riru_$moduleId"
-        name = "Riru - $moduleName"
+        name = "$moduleName (Riru)"
         author = moduleAuthor
         description = moduleDescription
         entrypoint = moduleEntrypoint
-        archiveName = "riru-${moduleId.replace('_', '-')}-${android.defaultConfig.versionName}"
-        updateJson = "https://github.com/Kr328/Riru-ClipboardWhitelist/releases/latest/download/$id.json"
+        archiveName = "${id.replace('_', '-')}-${android.defaultConfig.versionName}"
+        updateJson = "https://github.com/Kr328/Riru-ClipboardWhitelist/releases/latest/download/${id.replace('_', '-')}.json"
     }
 
     zygisk {
         id = "zygisk_$moduleId"
-        name = "Zygisk - $moduleName"
+        name = "$moduleName (Zygisk)"
         author = moduleAuthor
         description = moduleDescription
         entrypoint = moduleEntrypoint
-        archiveName = "zygisk-${moduleId.replace('_', '-')}-${android.defaultConfig.versionName}"
-        updateJson = "https://github.com/Kr328/Riru-ClipboardWhitelist/releases/latest/download/$id.json"
+        archiveName = "${id.replace('_', '-')}-${android.defaultConfig.versionName}"
+        updateJson = "https://github.com/Kr328/Riru-ClipboardWhitelist/releases/latest/download/${id.replace('_', '-')}.json"
     }
 }
 

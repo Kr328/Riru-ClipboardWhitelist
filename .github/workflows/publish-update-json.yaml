@@ -53,6 +53,7 @@ jobs:
               versionCode="$(grep_prop versionCode "$extract_root/module.prop")"
               zipUrl="$url"
               changelog="${{ github.event.release.html_url }}"
+              jsonFileName="$(echo -n "$id" | sed "s/_/-/g")"
 
               echo "-------- Module properties --------"
               echo "id = $id"
@@ -60,13 +61,14 @@ jobs:
               echo "versionCode = $versionCode"
               echo "zipUrl = $zipUrl"
               echo "changelog = $changelog"
+              echo "jsonFileName = $jsonFileName"
 
               if [[ -z "$id" || -z "$version" || -z "$versionCode" || -z "$zipUrl" || -z "$changelog" ]]; then
                   echo "Invalid module.prop"
                   exit 255
               fi
 
-              printf '{"version":"%s","versionCode":%d,"zipUrl":"%s","changelog":"%s"}' "$version" "$versionCode" "$zipUrl" "$changelog" > "$publish_root/$id.json"
+              printf '{"version":"%s","versionCode":%d,"zipUrl":"%s","changelog":"%s"}' "$version" "$versionCode" "$zipUrl" "$changelog" > "$publish_root/$jsonFileName.json"
 
               (( count++ )) || true
           done
