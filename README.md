@@ -4,26 +4,28 @@ A module of [Riru](https://github.com/RikkaApps/Riru)/[Zygisk](https://github.co
 
 ## Requirements
 
-* [Riru](https://github.com/RikkaApps/Riru) >= 25.0 installed.
+* Supported zygote injector enabled
+  - Riru >= 26.0
+  - Zygisk
 * Android 10+
 
 
 ## Feature
 
-Allowing apps to access the clipboard in the background on Android 10.   
+Allowing apps to access the clipboard in the background on Android 10+.
 
 
 ## Build
 
-1. Install JDK ,Android SDK ,Android NDK
+1. Install JDK, Android SDK
 
-2. Configure local.properties 
+2. Configure SDK path in local.properties 
 
    ```properties
    sdk.dir=/path/to/android/sdk
    ```
 
-3. Configure keystore.properties
+3. Configure built-in manager app signing in signing.properties
 
    ```properties
    keystore.path=/path/to/your/keystore.jks
@@ -38,4 +40,4 @@ Allowing apps to access the clipboard in the background on Android 10.
     ./gradlew module:assembleRelease
     ```
     
-4. Pick `riru-clipboard-whitelist-<version>.zip` from `module/build/outputs/magisk/<variant>`
+4. Pick `<injector>-clipboard-whitelist-<version>.zip` from `module/build/outputs/magisk/<injector>/<build-type>`
