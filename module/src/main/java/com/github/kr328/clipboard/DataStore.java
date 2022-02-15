@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -99,7 +100,12 @@ public class DataStore {
     }
 
     synchronized Set<String> getAllExempted(int userId) {
-        return packages.get(userId);
+        final Set<String> scoped = packages.get(userId);
+        if (scoped == null) {
+            return Collections.emptySet();
+        }
+
+        return scoped;
     }
 
     private void writePackages() {
