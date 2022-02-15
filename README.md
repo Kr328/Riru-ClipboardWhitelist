@@ -4,7 +4,7 @@ A module of [Riru](https://github.com/RikkaApps/Riru)/[Zygisk](https://github.co
 
 ## Requirements
 
-* Supported zygote injector enabled
+* Zygote inject framework installed
   - Riru >= 26.0
   - Zygisk
 * Android 10+
@@ -14,6 +14,10 @@ A module of [Riru](https://github.com/RikkaApps/Riru)/[Zygisk](https://github.co
 
 Allowing apps to access the clipboard in the background on Android 10+.
 
+
+## Multi-User Support
+
+Add "Clipboard" app to other user and configure it.
 
 ## Build
 
