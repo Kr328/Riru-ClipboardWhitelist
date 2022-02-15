@@ -18,41 +18,50 @@ jobs:
 
           # from https://github.com/topjohnwu/Magisk/blob/70415a396a4e1eae85d74672c11f6b675a8edff1/scripts/util_functions.sh#L30-L36
           grep_prop() {
-            local REGEX="s/^$1=//p"
-            shift
-            local FILES=$@
-            [ -z "$FILES" ] && FILES='/system/build.prop'
-            cat $FILES 2>/dev/null | dos2unix | sed -n "$REGEX" | head -n 1
+              local REGEX="s/^$1=//p"
+              shift
+              local FILES=$@
+              [ -z "$FILES" ] && FILES='/system/build.prop'
+              cat $FILES 2>/dev/null | dos2unix | sed -n "$REGEX" | head -n 1
           }
 
-          mkdir -p assets
-          mkdir -p publish
+          abort() {
+              echo "$1" >&2
+              exit 1
+          }
 
-          publish_root="publish"
-          count=0
+          PUBLIC_ROOT="./publish"
+          TEMP_ROOT="./temp"
+
+          mkdir -p "$PUBLIC_ROOT"
+          mkdir -p "$TEMP_ROOT"
+
+          echo "Generate changelog.md"
+
+          echo '${{ github.event.release.body }}' > "$PUBLIC_ROOT/changelog.md"
 
           echo "Fetching release assets"
 
-          wget -O - "${{ github.event.release.assets_url }}" | jq -r ".[].browser_download_url" | while read -r url
+          wget -O - '${{ github.event.release.assets_url }}' 2> /dev/null | jq -r ".[].browser_download_url" | while read -r url
           do
               echo "Processing $url"
 
-              file_name="assets/$count.zip"
-              extract_root="assets/$count"
+              FILE_NAME="$TEMP_ROOT/module.zip"
+              EXTRACT_DIR="$TEMP_ROOT/module"
 
-              echo "Downloading $file_name"
+              echo "Downloading $FILE_NAME"
 
-              wget -O "$file_name" "$url"
+              wget -O "$FILE_NAME" "$url" > /dev/null 2>&1 || abort "Download $url failed"
 
-              echo "Extract module $file_name to $extract_root"
+              echo "Extract module $FILE_NAME to $EXTRACT_DIR"
 
-              unzip -u -d "$extract_root" "$file_name" module.prop
+              unzip -o -d "$EXTRACT_DIR" "$FILE_NAME" module.prop > /dev/null 2>&1 || abort "Unzip $url failed"
 
-              id="$(grep_prop id "$extract_root/module.prop")"
-              version="$(grep_prop version "$extract_root/module.prop")"
-              versionCode="$(grep_prop versionCode "$extract_root/module.prop")"
+              id="$(grep_prop id "$EXTRACT_DIR/module.prop")"
+              version="$(grep_prop version "$EXTRACT_DIR/module.prop")"
+              versionCode="$(grep_prop versionCode "$EXTRACT_DIR/module.prop")"
               zipUrl="$url"
-              changelog="${{ github.event.release.html_url }}"
+              changelog="${{ github.event.repository.html_url }}/releases/download/${{ github.event.release.tag_name }}/changelog.md"
               jsonFileName="$(echo -n "$id" | sed "s/_/-/g")"
 
               echo "-------- Module properties --------"
@@ -64,17 +73,14 @@ jobs:
               echo "jsonFileName = $jsonFileName"
 
               if [[ -z "$id" || -z "$version" || -z "$versionCode" || -z "$zipUrl" || -z "$changelog" ]]; then
-                  echo "Invalid module.prop"
-                  exit 255
+                  abort "Invalid module.prop"
               fi
 
-              printf '{"version":"%s","versionCode":%d,"zipUrl":"%s","changelog":"%s"}' "$version" "$versionCode" "$zipUrl" "$changelog" > "$publish_root/$jsonFileName.json"
-
-              (( count++ )) || true
+              printf '{"version":"%s","versionCode":%d,"zipUrl":"%s","changelog":"%s"}' "$version" "$versionCode" "$zipUrl" "$changelog" > "$PUBLIC_ROOT/$jsonFileName.json"
           done
       - name: Upload Json
         uses: shogo82148/actions-upload-release-asset@v1
         with:
           github_token: ${{ github.token }}
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ./publish/*.json
+          asset_path: ./publish/*
