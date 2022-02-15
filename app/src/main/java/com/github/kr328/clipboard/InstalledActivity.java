@@ -46,7 +46,7 @@ public class InstalledActivity extends Activity {
     private void notify(int title, int content) {
         PendingIntent intent = PendingIntent.getActivity(
                 this,
-                114514,
+                0,
                 new Intent(this, MainActivity.class)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
                 PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
@@ -61,6 +61,6 @@ public class InstalledActivity extends Activity {
                 .setStyle(new Notification.BigTextStyle().bigText(getString(content)))
                 .build();
 
-        getSystemService(NotificationManager.class).notify(114514, notification);
+        getSystemService(NotificationManager.class).notify(0, notification);
     }
 }

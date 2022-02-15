@@ -1,5 +1,6 @@
 package com.github.kr328.clipboard;
 
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.pm.ApplicationInfo;
@@ -8,10 +9,13 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toolbar;
 
 import com.github.kr328.clipboard.shared.IClipboardWhitelist;
+import com.github.kr328.clipboard.shared.Log;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -24,6 +28,7 @@ public class MainActivity extends Activity {
     private final ExecutorService threads = Executors.newSingleThreadExecutor();
     private final AppAdapter adapter = new AppAdapter(this);
 
+    private Toolbar toolbar;
     private ListView appsList;
     private ProgressBar loading;
 
@@ -33,10 +38,17 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        UiUtils.applySystemBarsTranslucent(getWindow());
+
         setContentView(R.layout.main_activity);
 
+        toolbar = findViewById(R.id.toolbar);
         appsList = findViewById(R.id.apps);
         loading = findViewById(R.id.loading);
+
+        toolbar.setTitle(R.string.app_name);
+
+        setActionBar(toolbar);
 
         appsList.setAdapter(adapter);
 
@@ -46,7 +58,61 @@ public class MainActivity extends Activity {
             applyChange(((App) adapter.getItem(position)).getPackageName(), status);
         });
 
-        getActionBar().setTitle(R.string.app_name);
+        final float toolbarElevation = UiUtils.getToolbarElevation(this);
+
+        toolbar.setTag(false);
+
+        appsList.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            final boolean elevated = (boolean) toolbar.getTag();
+
+            if (elevated && UiUtils.isListViewAtTop(appsList)) {
+                final ValueAnimator newAnimator = ValueAnimator.ofFloat(toolbarElevation, 0);
+
+                newAnimator.addUpdateListener(valueAnimator ->
+                        toolbar.setElevation((float) valueAnimator.getAnimatedValue())
+                );
+
+                newAnimator.start();
+
+                toolbar.setTag(false);
+            } else if (!elevated && !UiUtils.isListViewAtTop(appsList)) {
+                final ValueAnimator newAnimator = ValueAnimator.ofFloat(0, toolbarElevation);
+
+                newAnimator.addUpdateListener(valueAnimator ->
+                        toolbar.setElevation((float) valueAnimator.getAnimatedValue())
+                );
+
+                newAnimator.start();
+
+                toolbar.setTag(true);
+            }
+        });
+
+        final int toolbarHeight = (int) UiUtils.getActionBarSize(this);
+
+        getWindow().getDecorView().setOnApplyWindowInsetsListener((view, insets) -> {
+            final FrameLayout.LayoutParams toolbarParams = new FrameLayout.LayoutParams(toolbar.getLayoutParams());
+
+            toolbarParams.height = toolbarHeight + insets.getSystemWindowInsetTop();
+
+            toolbar.setLayoutParams(toolbarParams);
+
+            toolbar.setPadding(0, insets.getSystemWindowInsetTop(), 0, 0);
+
+            toolbar.getParent().requestLayout();
+            toolbar.requestLayout();
+
+            appsList.setPadding(
+                    insets.getSystemWindowInsetLeft(),
+                    insets.getSystemWindowInsetTop() + toolbarHeight,
+                    insets.getSystemWindowInsetRight(),
+                    insets.getSystemWindowInsetBottom()
+            );
+
+            appsList.requestLayout();
+
+            return insets.consumeSystemWindowInsets();
+        });
 
         loadApps();
     }
@@ -146,6 +212,8 @@ public class MainActivity extends Activity {
         } else {
             title = R.string.unknown_error;
             content = R.string.unknown_error_description;
+
+            Log.w("Load apps failed: " + e, e);
         }
 
         runOnUiThread(() -> new AlertDialog.Builder(this)

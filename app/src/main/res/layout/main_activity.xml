@@ -7,8 +7,9 @@
         android:id="@+id/apps"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipToPadding="false"
         android:divider="@null"
-        android:dividerHeight="0dp"/>
+        android:dividerHeight="0dp" />
 
     <ProgressBar
         android:id="@+id/loading"
@@ -16,4 +17,14 @@
         android:layout_height="80dp"
         android:layout_gravity="center"
         android:indeterminate="true" />
+
+    <Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:layout_gravity="top|center_horizontal"
+        android:alpha="0.9"
+        android:background="?android:windowBackground"
+        android:elevation="0dp"
+        android:gravity="center_vertical"/>
 </FrameLayout>
