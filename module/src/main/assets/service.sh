@@ -1,6 +1,7 @@
 MODDIR=${0%/*}
+FLAG_FILE="$MODDIR/.module_updated"
 
-if [ ! -f "$MODDIR/module_updated" ]; then
+if [ ! -f "$FLAG_FILE" ]; then
   exit 0
 fi
 
@@ -10,4 +11,4 @@ done
 
 /system/bin/am start -n com.github.kr328.clipboard/.InstalledActivity
 
-rm -rf "$MODDIR/module_updated"
+rm -rf "$FLAG_FILE"
