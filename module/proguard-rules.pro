@@ -22,6 +22,6 @@
 
 -dontobfuscate
 
--keep class com.github.kr328.clipboard.Injector {
+-keep class com.github.kr328.clipboard.Main {
     public static void main(...);
 }

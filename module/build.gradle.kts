@@ -12,13 +12,13 @@ zygote {
     val moduleName = "Clipboard Whitelist"
     val moduleDescription = "Allow apps access clipboard in background."
     val moduleAuthor = "Kr328"
-    val moduleEntrypoint = "com.github.kr328.clipboard.Injector"
+    val moduleEntrypoint = "com.github.kr328.clipboard.Main"
 
     packages(ZygoteLoader.PACKAGE_SYSTEM_SERVER)
 
     riru {
         id = "riru_$moduleId"
-        name = "$moduleName (Riru)"
+        name = "Riru - $moduleName"
         author = moduleAuthor
         description = moduleDescription
         entrypoint = moduleEntrypoint
@@ -28,7 +28,7 @@ zygote {
 
     zygisk {
         id = "zygisk_$moduleId"
-        name = "$moduleName (Zygisk)"
+        name = "Zygisk - $moduleName"
         author = moduleAuthor
         description = moduleDescription
         entrypoint = moduleEntrypoint

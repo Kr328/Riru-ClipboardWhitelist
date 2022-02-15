@@ -9,7 +9,7 @@ import com.github.kr328.clipboard.shared.Log;
 import com.github.kr328.magic.services.ServiceManagerProxy;
 import com.github.kr328.zloader.ZygoteLoader;
 
-public class Injector {
+public class Main {
     @SuppressWarnings("unused")
     public static void main() {
         Log.i("Injected into " + ZygoteLoader.getPackageName());
@@ -22,7 +22,7 @@ public class Injector {
 
         try {
             new ServiceManagerProxy.Builder()
-                    .setAddServiceFilter(Injector::replaceService)
+                    .setAddServiceFilter(Main::replaceClipboard)
                     .build()
                     .install();
 
@@ -32,7 +32,7 @@ public class Injector {
         }
     }
 
-    private static Binder replaceService(String name, Binder service) {
+    private static Binder replaceClipboard(String name, Binder service) {
         if (Context.CLIPBOARD_SERVICE.equals(name)) {
             Log.i("Replacing clipboard");
 
