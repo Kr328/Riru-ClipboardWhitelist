@@ -5,5 +5,5 @@ public final class Constants {
 
     public static final int TRANSACT_CODE_GET_SERVICE = '_' << 24 | 'C' << 16 | 'B' << 8 | 'W';
 
-    public static final int SERVICE_VERSION = 3;
+    public static final int SERVICE_VERSION = 4;
 }

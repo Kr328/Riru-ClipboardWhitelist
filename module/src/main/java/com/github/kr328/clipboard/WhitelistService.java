@@ -3,7 +3,8 @@ package com.github.kr328.clipboard;
 import android.app.ActivityManagerHidden;
 import android.app.ActivityThread;
 import android.content.Context;
-import android.os.UserManagerHidden;
+import android.os.Binder;
+import android.os.UserHandleHidden;
 
 import com.github.kr328.clipboard.shared.Constants;
 import com.github.kr328.clipboard.shared.IClipboardWhitelist;
@@ -17,44 +18,49 @@ public class WhitelistService extends IClipboardWhitelist.Stub {
     }
 
     @Override
-    public String[] queryPackages() {
-        return DataStore.instance.queryPackages().toArray(new String[0]);
+    public String[] getAllExempted() {
+        final int userId = UserHandleHidden.getUserId(Binder.getCallingUid());
+
+        return DataStore.instance.getAllExempted(userId).toArray(new String[0]);
     }
 
     @Override
-    public void addPackage(String packageName) {
-        DataStore.instance.addPackage(packageName);
+    public void addExempted(String packageName) {
+        final int userId = UserHandleHidden.getUserId(Binder.getCallingUid());
 
-        forceStopPackage(packageName);
+        DataStore.instance.addExempted(packageName, userId);
+
+        forceStopPackage(packageName, userId);
     }
 
     @Override
-    public void removePackage(String packageName) {
-        DataStore.instance.removePackage(packageName);
+    public void removeExempted(String packageName) {
+        final int userId = UserHandleHidden.getUserId(Binder.getCallingUid());
 
-        forceStopPackage(packageName);
+        DataStore.instance.removeExempted(packageName, userId);
+
+        forceStopPackage(packageName, userId);
     }
 
-    private void forceStopPackage(String packageName) {
+    private void forceStopPackage(String packageName, int userId) {
         try {
             BinderUtils.withEvaluated(() -> {
                 final ActivityThread thread = ActivityThread.currentActivityThread();
-                if (thread == null)
+                if (thread == null) {
                     throw new IllegalStateException("System unavailable");
+                }
 
                 final Context context = thread.getSystemContext();
-                if (context == null)
+                if (context == null) {
                     throw new IllegalStateException("System unavailable");
-
-                final UserManagerHidden userManager = context.getSystemService(UserManagerHidden.class);
-                if (userManager == null)
-                    throw new IllegalStateException("UserManager unavailable");
+                }
 
                 final ActivityManagerHidden activityManager = context.getSystemService(ActivityManagerHidden.class);
-                if (activityManager == null)
+                if (activityManager == null) {
                     throw new IllegalStateException("ActivityManager unavailable");
+                }
 
-                userManager.getUsers().forEach((u) -> activityManager.forceStopPackageAsUser(packageName, u.id));
+                activityManager.forceStopPackageAsUser(packageName, userId);
             });
         } catch (Exception e) {
             Log.w("Force stop package " + packageName + ": " + e, e);

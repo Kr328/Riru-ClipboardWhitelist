@@ -3,7 +3,6 @@ package com.github.kr328.clipboard;
 import android.app.ActivityThread;
 import android.content.ClipData;
 import android.content.ClipDescription;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.IClipboard;
 import android.content.IOnPrimaryClipChangedListener;
@@ -12,16 +11,14 @@ import android.content.pm.PackageManagerHidden;
 import android.os.Binder;
 import android.os.Parcel;
 import android.os.RemoteException;
-import android.provider.Settings;
-import android.provider.SettingsSecure;
-import android.text.TextUtils;
 
 import com.github.kr328.clipboard.shared.Constants;
 import com.github.kr328.clipboard.shared.Log;
 import com.github.kr328.magic.aidl.ServerProxy;
 import com.github.kr328.magic.aidl.ServerProxyFactory;
 import com.github.kr328.magic.aidl.TransactProxy;
-import com.github.kr328.magic.util.BinderUtils;
+
+import java.util.Arrays;
 
 import dev.rikka.tools.refine.Refine;
 
@@ -30,6 +27,7 @@ public class ClipboardProxy extends IClipboard.Stub {
             ServerProxy.mustCreateFactory(IClipboard.class, ClipboardProxy.class, false);
 
     private final IClipboard original;
+
     private final WhitelistService whitelistService = new WhitelistService();
 
     public ClipboardProxy(IClipboard original) {
@@ -39,7 +37,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     @Override
     @TransactProxy
     public ClipData getPrimaryClip(String callingPackage, int userId) throws RemoteException {
-        final String packageName = asDefaultIME(callingPackage, userId);
+        final String packageName = markAsSystem(callingPackage, userId);
 
         return original.getPrimaryClip(packageName, userId);
     }
@@ -47,7 +45,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     @Override
     @TransactProxy
     public ClipDescription getPrimaryClipDescription(String callingPackage, int userId) throws RemoteException {
-        final String packageName = asDefaultIME(callingPackage, userId);
+        final String packageName = markAsSystem(callingPackage, userId);
 
         return original.getPrimaryClipDescription(packageName, userId);
     }
@@ -55,7 +53,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     @Override
     @TransactProxy
     public boolean hasPrimaryClip(String callingPackage, int userId) throws RemoteException {
-        final String packageName = asDefaultIME(callingPackage, userId);
+        final String packageName = markAsSystem(callingPackage, userId);
 
         return original.hasPrimaryClip(packageName, userId);
     }
@@ -63,7 +61,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     @Override
     @TransactProxy
     public boolean hasClipboardText(String callingPackage, int userId) throws RemoteException {
-        final String packageName = asDefaultIME(callingPackage, userId);
+        final String packageName = markAsSystem(callingPackage, userId);
 
         return original.hasClipboardText(packageName, userId);
     }
@@ -71,7 +69,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     @Override
     @TransactProxy
     public void addPrimaryClipChangedListener(IOnPrimaryClipChangedListener listener, String callingPackage, int userId) throws RemoteException {
-        final String packageName = asDefaultIME(callingPackage, userId);
+        final String packageName = markAsSystem(callingPackage, userId);
 
         original.addPrimaryClipChangedListener(listener, packageName, userId);
     }
@@ -79,7 +77,7 @@ public class ClipboardProxy extends IClipboard.Stub {
     @Override
     @TransactProxy
     public void removePrimaryClipChangedListener(IOnPrimaryClipChangedListener listener, String callingPackage, int userId) throws RemoteException {
-        final String packageName = asDefaultIME(callingPackage, userId);
+        final String packageName = markAsSystem(callingPackage, userId);
 
         original.removePrimaryClipChangedListener(listener, packageName, userId);
     }
@@ -93,13 +91,23 @@ public class ClipboardProxy extends IClipboard.Stub {
             if (context == null)
                 return false;
 
-            final PackageManagerHidden pm = Refine.unsafeCast(context.getPackageManager());
-
             try {
-                final int appUid = pm.getPackageUidAsUser(Constants.APP_PACKAGE_NAME, 0);
-                if (appUid != Binder.getCallingUid())
+                final PackageManager pm = context.getPackageManager();
+                if (pm == null) {
                     return false;
-            } catch (PackageManager.NameNotFoundException e) {
+                }
+
+                final String[] packages = pm.getPackagesForUid(Binder.getCallingUid());
+                if (packages == null) {
+                    return false;
+                }
+
+                if (!Arrays.asList(packages).contains(Constants.APP_PACKAGE_NAME)) {
+                    return false;
+                }
+            } catch (Exception e) {
+                Log.e("Verify manager failed: " + e, e);
+
                 return false;
             }
 
@@ -111,45 +119,31 @@ public class ClipboardProxy extends IClipboard.Stub {
         return super.onTransact(code, data, reply, flags);
     }
 
-    private String asDefaultIME(String callingPkg, int userId) {
+    private String markAsSystem(String callingPkg, int userId) {
         try {
-            if (DataStore.instance.shouldIgnore(callingPkg)) {
+            final Context context = ActivityThread.currentActivityThread().getSystemContext();
+            if (context == null) {
                 return callingPkg;
             }
 
-            final Context context = ActivityThread.currentActivityThread().getSystemContext();
-
-            if (context == null)
-                return callingPkg;
-
             final PackageManagerHidden pm = Refine.unsafeCast(context.getPackageManager());
-
-            if (pm.getPackageUidAsUser(callingPkg, userId) != Binder.getCallingUid())
+            if (pm == null) {
                 return callingPkg;
+            }
 
-            final String componentName = BinderUtils.withEvaluated(() ->
-                    SettingsSecure.getStringForUser(
-                            context.getContentResolver(),
-                            Settings.Secure.DEFAULT_INPUT_METHOD,
-                            userId
-                    )
-            );
-
-            if (TextUtils.isEmpty(componentName))
+            if (pm.getPackageUidAsUser(callingPkg, userId) != Binder.getCallingUid()) {
                 return callingPkg;
+            }
 
-            final String packageName = ComponentName.unflattenFromString(componentName).getPackageName();
+            if (!DataStore.instance.isExempted(callingPkg, userId)) {
+                return callingPkg;
+            }
 
-            final int targetUid = BinderUtils.withEvaluated(() -> pm.getPackageUidAsUser(packageName, userId));
+            Binder.clearCallingIdentity();
 
-            final long token = Binder.clearCallingIdentity();
-            final long newToken = token & 0xFFFFFFFFL | ((long) targetUid << 32);
-
-            Binder.restoreCallingIdentity(newToken);
-
-            return packageName;
+            return context.getPackageName();
         } catch (Exception e) {
-            Log.w("Run as default IME: " + e, e);
+            Log.w("Run as system: " + e, e);
 
             return callingPkg;
         }

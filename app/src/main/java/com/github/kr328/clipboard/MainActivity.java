@@ -43,7 +43,7 @@ public class MainActivity extends Activity {
         appsList.setOnItemClickListener((parent, view, position, id) -> {
             final boolean status = adapter.invertSelected(position);
 
-            applyPackage(((App) adapter.getItem(position)).getPackageName(), status);
+            applyChange(((App) adapter.getItem(position)).getPackageName(), status);
         });
 
         getActionBar().setTitle(R.string.app_name);
@@ -87,7 +87,7 @@ public class MainActivity extends Activity {
             try {
                 final PackageManager pm = getPackageManager();
                 final IClipboardWhitelist service = Service.getService();
-                final HashSet<String> whitelist = new HashSet<>(Arrays.asList(service.queryPackages()));
+                final HashSet<String> whitelist = new HashSet<>(Arrays.asList(service.getAllExempted()));
 
                 final List<App> apps = pm.getInstalledApplications(0).stream()
                         .filter((info) -> showSystemApps || (info.flags & ApplicationInfo.FLAG_SYSTEM) == 0)
@@ -117,15 +117,15 @@ public class MainActivity extends Activity {
         });
     }
 
-    private void applyPackage(String packageName, boolean status) {
+    private void applyChange(String packageName, boolean exempted) {
         threads.submit(() -> {
             try {
                 final IClipboardWhitelist service = Service.getService();
 
-                if (status) {
-                    service.addPackage(packageName);
+                if (exempted) {
+                    service.addExempted(packageName);
                 } else {
-                    service.removePackage(packageName);
+                    service.removeExempted(packageName);
                 }
             } catch (Exception e) {
                 showError(e);

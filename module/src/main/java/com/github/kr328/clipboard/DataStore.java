@@ -4,42 +4,50 @@ import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 import static java.nio.file.StandardOpenOption.WRITE;
 
+import android.os.UserHandleHidden;
+import android.util.Pair;
+
 import com.github.kr328.clipboard.shared.Log;
 import com.github.kr328.zloader.ZygoteLoader;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.attribute.FileAttribute;
-import java.nio.file.attribute.PosixFilePermission;
-import java.nio.file.attribute.PosixFilePermissions;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DataStore {
-    public static final String DATA_PATH = ZygoteLoader.getDataDirectory() + "/whitelist.list";
+    public static final Path DATA_PATH = Paths.get(ZygoteLoader.getDataDirectory(), "whitelist.list");
 
     public final static DataStore instance = new DataStore();
 
-    private final Set<String> packages = new HashSet<>();
+    private Map<Integer, Set<String>> packages = new HashMap<>();
 
     private DataStore() {
         Log.i("Load data from " + DATA_PATH);
 
         try {
-            List<String> data = Files.readAllLines(Paths.get(DATA_PATH));
+            List<String> data = Files.readAllLines(DATA_PATH);
 
-            packages.clear();
-
-            data.stream()
-                    .filter(Objects::nonNull)
+            packages = data.stream()
                     .map(String::trim)
                     .filter(s -> !s.isEmpty())
-                    .peek(s -> Log.i("package:" + s))
-                    .forEach(packages::add);
+                    .map(DataStore::parseWhitelistLine)
+                    .filter(Objects::nonNull)
+                    .peek(s -> Log.i("userId=" + s.first + ", packageName=" + s.second))
+                    .collect(Collectors.groupingBy(p -> p.first))
+                    .entrySet()
+                    .stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e ->
+                            e.getValue().stream().map(p -> p.second).collect(Collectors.toSet())
+                    ));
 
             Log.i("Reloaded");
         } catch (IOException e) {
@@ -49,35 +57,59 @@ public class DataStore {
         }
     }
 
-    synchronized boolean shouldIgnore(String packageName) {
-        return !packages.contains(packageName);
+    private static Pair<Integer, String> parseWhitelistLine(String line) {
+        String[] segments = line.split(":", 2);
+        switch (segments.length) {
+            case 1: {
+                return new Pair<>(UserHandleHidden.USER_SYSTEM, segments[0]);
+            }
+            case 2: {
+                final int userId = Integer.parseInt(segments[0]);
+                return new Pair<>(userId, segments[1]);
+            }
+        }
+
+        return null;
     }
 
-    synchronized void addPackage(String packageName) {
-        packages.add(packageName);
+    synchronized boolean isExempted(String packageName, int userId) {
+        final Set<String> scoped = packages.get(userId);
+        if (scoped == null) {
+            return false;
+        }
+
+        return scoped.contains(packageName);
+    }
+
+    synchronized void addExempted(String packageName, int userId) {
+        packages.computeIfAbsent(userId, usr -> new HashSet<>()).add(packageName);
 
         writePackages();
     }
 
-    synchronized void removePackage(String packageName) {
-        packages.remove(packageName);
+    synchronized void removeExempted(String packageName, int userId) {
+        final Set<String> scoped = packages.get(userId);
+        if (scoped == null) {
+            return;
+        }
+
+        scoped.remove(packageName);
 
         writePackages();
     }
 
-    synchronized Set<String> queryPackages() {
-        return new HashSet<>(packages);
+    synchronized Set<String> getAllExempted(int userId) {
+        return packages.get(userId);
     }
 
     private void writePackages() {
         try {
-            final FileAttribute<Set<PosixFilePermission>> permissions = PosixFilePermissions.asFileAttribute(
-                    PosixFilePermissions.fromString("rwx------")
-            );
+            final List<String> lines = packages.entrySet()
+                    .stream()
+                    .flatMap(entry -> entry.getValue().stream().map(pkg -> entry.getKey() + ":" + pkg))
+                    .collect(Collectors.toList());
 
-            Files.createDirectories(Paths.get(DATA_PATH).getParent(), permissions);
-
-            Files.write(Paths.get(DATA_PATH), packages, WRITE, CREATE, TRUNCATE_EXISTING);
+            Files.write(DATA_PATH, lines, WRITE, CREATE, TRUNCATE_EXISTING);
         } catch (IOException e) {
             Log.w("Save whitelist.list: " + e, e);
         }
