@@ -32,23 +32,18 @@ subprojects {
     }
 
     extensions.configure<BaseExtension> {
-        val minSdkVersion = 29
-        val targetSdkVersion = 31
-        val buildVersionName = "v18"
-        val buildVersionCode = 18
-
-        compileSdkVersion(targetSdkVersion)
+        compileSdkVersion(31)
 
         defaultConfig {
             if (isApp) {
                 applicationId = "com.github.kr328.clipboard"
             }
 
-            minSdk = minSdkVersion
-            targetSdk = targetSdkVersion
+            minSdk = 29
+            targetSdk = 31
 
-            versionName = buildVersionName
-            versionCode = buildVersionCode
+            versionName = "v19"
+            versionCode = 19
 
             if (!isApp) {
                 consumerProguardFiles("consumer-rules.pro")
