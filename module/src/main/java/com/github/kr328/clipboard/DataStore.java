@@ -32,6 +32,25 @@ public class DataStore {
     private Map<Integer, Set<String>> packages = new HashMap<>();
 
     private DataStore() {
+
+    }
+
+    private static Pair<Integer, String> parseWhitelistLine(String line) {
+        String[] segments = line.split(":", 2);
+        switch (segments.length) {
+            case 1: {
+                return new Pair<>(UserHandleHidden.USER_SYSTEM, segments[0]);
+            }
+            case 2: {
+                final int userId = Integer.parseInt(segments[0]);
+                return new Pair<>(userId, segments[1]);
+            }
+        }
+
+        return null;
+    }
+
+    synchronized void reload() {
         Log.i("Load data from " + DATA_PATH);
 
         try {
@@ -56,21 +75,6 @@ public class DataStore {
                 Log.w("Load config file " + DATA_PATH + ": " + e, e);
             }
         }
-    }
-
-    private static Pair<Integer, String> parseWhitelistLine(String line) {
-        String[] segments = line.split(":", 2);
-        switch (segments.length) {
-            case 1: {
-                return new Pair<>(UserHandleHidden.USER_SYSTEM, segments[0]);
-            }
-            case 2: {
-                final int userId = Integer.parseInt(segments[0]);
-                return new Pair<>(userId, segments[1]);
-            }
-        }
-
-        return null;
     }
 
     synchronized boolean isExempted(String packageName, int userId) {
@@ -106,6 +110,10 @@ public class DataStore {
         }
 
         return scoped;
+    }
+
+    synchronized Map<Integer, Set<String>> getAllExempted() {
+        return packages;
     }
 
     private void writePackages() {
