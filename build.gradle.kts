@@ -42,8 +42,8 @@ subprojects {
             minSdk = 29
             targetSdk = 31
 
-            versionName = "v20"
-            versionCode = 20
+            versionName = "v21"
+            versionCode = 21
 
             if (!isApp) {
                 consumerProguardFiles("consumer-rules.pro")
