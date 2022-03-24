@@ -24,7 +24,7 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("deps") {
             val agp = "7.1.2"
-            val zloader = "2.5"
+            val zloader = "2.6"
             val refine = "3.1.0"
             val magic = "1.4"
 
