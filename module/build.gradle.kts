@@ -1,10 +1,17 @@
-import com.github.kr328.zloader.gradle.ZygoteLoader
-import com.github.kr328.zloader.gradle.util.toCapitalized
+import com.github.kr328.gradle.zygote.ZygoteLoader.*
 
 plugins {
-    id("com.android.application")
-    id("zygote-loader")
-    id("dev.rikka.tools.refine.gradle-plugin")
+    alias(deps.plugins.android.application)
+    alias(deps.plugins.zygote)
+    alias(deps.plugins.refine)
+}
+
+android {
+    sourceSets {
+        all {
+            assets.srcDir(buildDir.resolve("intermediates/manager_apk/$name"))
+        }
+    }
 }
 
 zygote {
@@ -14,7 +21,7 @@ zygote {
     val moduleAuthor = "Kr328"
     val moduleEntrypoint = "com.github.kr328.clipboard.Main"
 
-    packages(ZygoteLoader.PACKAGE_SYSTEM_SERVER)
+    packages(PACKAGE_SYSTEM_SERVER)
 
     riru {
         id = "riru_$moduleId"
@@ -43,17 +50,20 @@ androidComponents {
         val buildType = it.buildType!!
 
         afterEvaluate {
-            (tasks["packageMagisk${name.toCapitalized()}"] as Zip).apply {
-                dependsOn(project(":app").tasks["assemble${buildType.toCapitalized()}"])
+            val packaging = project(":app").tasks["package${buildType.capitalize()}"]
+            val syncManager = task("syncManagerApk${name.capitalize()}", Sync::class) {
+                dependsOn(packaging)
 
-                from(project(":app").extra["apk$buildType"]!!) {
-                    into("system/app/ClipboardWhitelist")
+                destinationDir = buildDir.resolve("intermediates/manager_apk/$name")
+
+                from(packaging.outputs) {
                     include("*.apk")
-                    rename {
-                        "ClipboardWhitelist.apk"
-                    }
+                    into("system/app/ClipboardWhitelist")
+                    rename { "ClipboardWhitelist.apk" }
                 }
             }
+            tasks["merge${name.capitalize()}Assets"].dependsOn(syncManager)
+            tasks.findByName("lintVitalAnalyze${name.capitalize()}")?.dependsOn(syncManager)
         }
     }
 }

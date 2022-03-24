@@ -1,20 +1,10 @@
-@file:Suppress("UNUSED_VARIABLE")
-
 import com.android.build.gradle.BaseExtension
 import java.io.FileNotFoundException
 import java.util.*
 
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-        maven(url = "https://maven.kr328.app/releases")
-    }
-    dependencies {
-        classpath(deps.build.android)
-        classpath(deps.build.refine)
-        classpath(deps.build.zloader)
-    }
+plugins {
+    alias(deps.plugins.android.application) apply false
+    alias(deps.plugins.android.library) apply false
 }
 
 subprojects {
@@ -24,12 +14,6 @@ subprojects {
     }
 
     apply(plugin = if (isApp) "com.android.application" else "com.android.library")
-
-    repositories {
-        google()
-        mavenCentral()
-        maven(url = "https://maven.kr328.app/releases")
-    }
 
     extensions.configure<BaseExtension> {
         compileSdkVersion(31)
@@ -42,8 +26,8 @@ subprojects {
             minSdk = 29
             targetSdk = 31
 
-            versionName = "v21"
-            versionCode = 21
+            versionName = "v22"
+            versionCode = 22
 
             if (!isApp) {
                 consumerProguardFiles("consumer-rules.pro")

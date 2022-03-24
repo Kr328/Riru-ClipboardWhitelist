@@ -1,7 +1,7 @@
 import com.android.build.api.artifact.SingleArtifact
 
 plugins {
-    id("com.android.application")
+    alias(deps.plugins.android.application)
 }
 
 androidComponents {
