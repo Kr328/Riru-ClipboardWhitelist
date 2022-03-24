@@ -1,9 +1,9 @@
 import com.github.kr328.gradle.zygote.ZygoteLoader.*
 
 plugins {
-    alias(deps.plugins.android.application)
-    alias(deps.plugins.zygote)
-    alias(deps.plugins.refine)
+    id("com.android.application")
+    id("com.github.kr328.gradle.zygote")
+    id("dev.rikka.tools.refine")
 }
 
 android {
@@ -73,6 +73,6 @@ dependencies {
 
     implementation(project(":shared"))
 
-    implementation(deps.refine.runtime)
-    implementation(deps.magic.library)
+    implementation(libs.refine.runtime)
+    implementation(libs.magic.library)
 }

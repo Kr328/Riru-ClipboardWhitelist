@@ -3,19 +3,18 @@ import java.io.FileNotFoundException
 import java.util.*
 
 plugins {
-    alias(deps.plugins.android.application) apply false
-    alias(deps.plugins.android.library) apply false
+    val agp = "7.1.2"
+    val zygote = "2.6"
+    val refine = "3.1.0"
+
+    id("com.android.application") version agp apply false
+    id("com.android.library") version agp apply false
+    id("com.github.kr328.gradle.zygote") version zygote apply false
+    id("dev.rikka.tools.refine") version refine apply false
 }
 
 subprojects {
-    val isApp = when (name) {
-        "app", "module" -> true
-        else -> false
-    }
-
-    apply(plugin = if (isApp) "com.android.application" else "com.android.library")
-
-    extensions.configure<BaseExtension> {
+    val configureBaseExtension: BaseExtension.(isApp: Boolean) -> Unit = { isApp: Boolean ->
         compileSdkVersion(31)
 
         defaultConfig {
@@ -65,6 +64,17 @@ subprojects {
                     "proguard-rules.pro"
                 )
             }
+        }
+    }
+
+    plugins.withId("com.android.application") {
+        extensions.configure<BaseExtension> {
+            configureBaseExtension(true)
+        }
+    }
+    plugins.withId("com.android.library") {
+        extensions.configure<BaseExtension> {
+            configureBaseExtension(false)
         }
     }
 }

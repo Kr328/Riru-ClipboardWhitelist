@@ -1,9 +1,9 @@
 plugins {
-    alias(deps.plugins.android.library)
+    id("com.android.library")
 }
 
 dependencies {
-    annotationProcessor(deps.refine.processor)
+    annotationProcessor(libs.refine.processor)
 
-    compileOnly(deps.refine.annotation)
+    compileOnly(libs.refine.annotation)
 }
