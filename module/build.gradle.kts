@@ -76,3 +76,5 @@ dependencies {
     implementation(libs.refine.runtime)
     implementation(libs.magic.library)
 }
+
+evaluationDependsOn(":app")
