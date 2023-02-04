@@ -37,8 +37,10 @@ jobs:
           mkdir -p "$TEMP_ROOT"
 
           echo "Generate changelog.md"
-
-          echo '${{ github.event.release.body }}' > "$PUBLIC_ROOT/changelog.md"
+          
+          cat << __EOF_OF_CHANGELOGS__ > "$PUBLIC_ROOT/changelog.md"
+          ${{ github.event.release.body }}
+          __EOF_OF_CHANGELOGS__
 
           echo "Fetching release assets"
 
