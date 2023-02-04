@@ -35,8 +35,8 @@ public class DataStore {
 
     }
 
-    private static Pair<Integer, String> parseWhitelistLine(String line) {
-        String[] segments = line.split(":", 2);
+    private static Pair<Integer, String> parseWhitelistLine(final String line) {
+        final String[] segments = line.split(":", 2);
         switch (segments.length) {
             case 1: {
                 return new Pair<>(UserHandleHidden.USER_SYSTEM, segments[0]);
@@ -54,7 +54,7 @@ public class DataStore {
         Log.i("Load data from " + DATA_PATH);
 
         try {
-            List<String> data = Files.readAllLines(DATA_PATH);
+            final List<String> data = Files.readAllLines(DATA_PATH);
 
             packages = data.stream()
                     .map(String::trim)
@@ -70,14 +70,14 @@ public class DataStore {
                     ));
 
             Log.i("Reloaded");
-        } catch (IOException e) {
+        } catch (final IOException e) {
             if (!(e instanceof FileNotFoundException)) {
                 Log.w("Load config file " + DATA_PATH + ": " + e, e);
             }
         }
     }
 
-    synchronized boolean isExempted(String packageName, int userId) {
+    synchronized boolean isExempted(final String packageName, final int userId) {
         final Set<String> scoped = packages.get(userId);
         if (scoped == null) {
             return false;
@@ -86,13 +86,13 @@ public class DataStore {
         return scoped.contains(packageName);
     }
 
-    synchronized void addExempted(String packageName, int userId) {
+    synchronized void addExempted(final String packageName, final int userId) {
         packages.computeIfAbsent(userId, usr -> new HashSet<>()).add(packageName);
 
         writePackages();
     }
 
-    synchronized void removeExempted(String packageName, int userId) {
+    synchronized void removeExempted(final String packageName, final int userId) {
         final Set<String> scoped = packages.get(userId);
         if (scoped == null) {
             return;
@@ -103,7 +103,7 @@ public class DataStore {
         writePackages();
     }
 
-    synchronized Set<String> getAllExempted(int userId) {
+    synchronized Set<String> getAllExempted(final int userId) {
         final Set<String> scoped = packages.get(userId);
         if (scoped == null) {
             return Collections.emptySet();
@@ -124,7 +124,7 @@ public class DataStore {
                     .collect(Collectors.toList());
 
             Files.write(DATA_PATH, lines, WRITE, CREATE, TRUNCATE_EXISTING);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             Log.w("Save whitelist.list: " + e, e);
         }
     }

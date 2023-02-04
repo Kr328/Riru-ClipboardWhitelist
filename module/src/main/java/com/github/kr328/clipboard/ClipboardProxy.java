@@ -35,13 +35,13 @@ public class ClipboardProxy extends IClipboard.Stub {
 
     private final WhitelistService whitelistService = new WhitelistService();
 
-    public ClipboardProxy(IClipboard original) {
+    public ClipboardProxy(final IClipboard original) {
         this.original = original;
     }
 
     @Override
     @TransactProxy
-    public ClipData getPrimaryClip(String callingPackage, int userId) throws RemoteException {
+    public ClipData getPrimaryClip(final String callingPackage, final int userId) throws RemoteException {
         final String packageName = markAsDefaultIME(callingPackage, userId);
 
         return original.getPrimaryClip(packageName, userId);
@@ -49,7 +49,7 @@ public class ClipboardProxy extends IClipboard.Stub {
 
     @Override
     @TransactProxy
-    public ClipDescription getPrimaryClipDescription(String callingPackage, int userId) throws RemoteException {
+    public ClipDescription getPrimaryClipDescription(final String callingPackage, final int userId) throws RemoteException {
         final String packageName = markAsDefaultIME(callingPackage, userId);
 
         return original.getPrimaryClipDescription(packageName, userId);
@@ -57,7 +57,7 @@ public class ClipboardProxy extends IClipboard.Stub {
 
     @Override
     @TransactProxy
-    public boolean hasPrimaryClip(String callingPackage, int userId) throws RemoteException {
+    public boolean hasPrimaryClip(final String callingPackage, final int userId) throws RemoteException {
         final String packageName = markAsDefaultIME(callingPackage, userId);
 
         return original.hasPrimaryClip(packageName, userId);
@@ -65,7 +65,7 @@ public class ClipboardProxy extends IClipboard.Stub {
 
     @Override
     @TransactProxy
-    public boolean hasClipboardText(String callingPackage, int userId) throws RemoteException {
+    public boolean hasClipboardText(final String callingPackage, final int userId) throws RemoteException {
         final String packageName = markAsDefaultIME(callingPackage, userId);
 
         return original.hasClipboardText(packageName, userId);
@@ -73,7 +73,7 @@ public class ClipboardProxy extends IClipboard.Stub {
 
     @Override
     @TransactProxy
-    public void addPrimaryClipChangedListener(IOnPrimaryClipChangedListener listener, String callingPackage, int userId) throws RemoteException {
+    public void addPrimaryClipChangedListener(final IOnPrimaryClipChangedListener listener, final String callingPackage, final int userId) throws RemoteException {
         final String packageName = markAsDefaultIME(callingPackage, userId);
 
         original.addPrimaryClipChangedListener(listener, packageName, userId);
@@ -81,7 +81,7 @@ public class ClipboardProxy extends IClipboard.Stub {
 
     @Override
     @TransactProxy
-    public void removePrimaryClipChangedListener(IOnPrimaryClipChangedListener listener, String callingPackage, int userId) throws RemoteException {
+    public void removePrimaryClipChangedListener(final IOnPrimaryClipChangedListener listener, final String callingPackage, final int userId) throws RemoteException {
         final String packageName = markAsDefaultIME(callingPackage, userId);
 
         original.removePrimaryClipChangedListener(listener, packageName, userId);
@@ -89,7 +89,7 @@ public class ClipboardProxy extends IClipboard.Stub {
 
     @Override
     @TransactProxy(Constants.TRANSACT_CODE_GET_SERVICE)
-    public boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
+    public boolean onTransact(final int code, final Parcel data, final Parcel reply, final int flags) throws RemoteException {
         if (Constants.TRANSACT_CODE_GET_SERVICE == code) {
             final Context context = ActivityThread.currentActivityThread().getSystemContext();
 
@@ -110,7 +110,7 @@ public class ClipboardProxy extends IClipboard.Stub {
                 if (!Arrays.asList(packages).contains(Constants.APP_PACKAGE_NAME)) {
                     return false;
                 }
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 Log.e("Verify manager failed: " + e, e);
 
                 return false;
@@ -124,7 +124,7 @@ public class ClipboardProxy extends IClipboard.Stub {
         return super.onTransact(code, data, reply, flags);
     }
 
-    private String markAsDefaultIME(String callingPkg, int userId) {
+    private String markAsDefaultIME(final String callingPkg, final int userId) {
         try {
             final Context context = ActivityThread.currentActivityThread().getSystemContext();
             if (context == null) {
@@ -162,7 +162,7 @@ public class ClipboardProxy extends IClipboard.Stub {
             Binder.restoreCallingIdentity(newToken);
 
             return packageName;
-        } catch (Exception e) {
+        } catch (final Exception e) {
             Log.w("Run as default IME: " + e, e);
 
             return callingPkg;

@@ -9,6 +9,7 @@ import android.os.Process;
 
 import com.github.kr328.clipboard.shared.Log;
 import com.github.kr328.magic.services.ServiceManagerProxy;
+import com.github.kr328.zloader.BinderInterceptors;
 import com.github.kr328.zloader.ZygoteLoader;
 
 import java.nio.file.Files;
@@ -27,10 +28,25 @@ public class Main {
         }
 
         try {
-            new ServiceManagerProxy.Builder()
-                    .setAddServiceFilter(Main::replaceClipboard)
-                    .build()
-                    .install();
+            ServiceManagerProxy.install(new ServiceManagerProxy.Interceptor() {
+                @Override
+                public Binder addService(final String name, final Binder service) {
+                    if (Context.CLIPBOARD_SERVICE.equals(name)) {
+                        Log.i("Intercepting clipboard");
+
+                        try {
+                            BinderInterceptors.install(service, next -> {
+                                final IClipboard original = IClipboard.Stub.asInterface(next);
+                                return ClipboardProxy.FACTORY.create(original, new ClipboardProxy(original));
+                            });
+                        } catch (final Throwable e) {
+                            Log.e("Replacing clipboard: " + e, e);
+                        }
+                    }
+
+                    return super.addService(name, service);
+                }
+            });
 
             new Thread(() -> {
                 final Path dataDirectory = Paths.get(ZygoteLoader.getDataDirectory());
@@ -39,7 +55,7 @@ public class Main {
                     try {
                         //noinspection BusyWait
                         Thread.sleep(1000L);
-                    } catch (InterruptedException e) {
+                    } catch (final InterruptedException e) {
                         return;
                     }
                 }
@@ -67,30 +83,14 @@ public class Main {
                                     activity.forceStopPackageAsUser(packageName, userId)
                             )
                     );
-                } catch (Throwable throwable) {
+                } catch (final Throwable throwable) {
                     Log.w("Forcing stop packages failed: " + throwable, throwable);
                 }
             }).start();
 
             Log.i("Inject successfully");
-        } catch (Throwable e) {
+        } catch (final Throwable e) {
             Log.e("Inject: " + e, e);
         }
-    }
-
-    private static Binder replaceClipboard(String name, Binder service) {
-        if (Context.CLIPBOARD_SERVICE.equals(name)) {
-            Log.i("Replacing clipboard");
-
-            try {
-                final IClipboard original = IClipboard.Stub.asInterface(service);
-
-                return ClipboardProxy.FACTORY.create(original, new ClipboardProxy(original));
-            } catch (Throwable e) {
-                Log.e("Replacing clipboard: " + e, e);
-            }
-        }
-
-        return service;
     }
 }

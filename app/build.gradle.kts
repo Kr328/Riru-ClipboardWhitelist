@@ -1,7 +1,9 @@
-import com.android.build.api.artifact.SingleArtifact
-
 plugins {
     id("com.android.application")
+}
+
+android {
+    namespace = "com.github.kr328.clipboard"
 }
 
 dependencies {
