@@ -25,7 +25,7 @@ public class WhitelistService extends IClipboardWhitelist.Stub {
     }
 
     @Override
-    public void addExempted(String packageName) {
+    public void addExempted(final String packageName) {
         final int userId = UserHandleHidden.getUserId(Binder.getCallingUid());
 
         DataStore.instance.addExempted(packageName, userId);
@@ -34,7 +34,7 @@ public class WhitelistService extends IClipboardWhitelist.Stub {
     }
 
     @Override
-    public void removeExempted(String packageName) {
+    public void removeExempted(final String packageName) {
         final int userId = UserHandleHidden.getUserId(Binder.getCallingUid());
 
         DataStore.instance.removeExempted(packageName, userId);
@@ -42,7 +42,7 @@ public class WhitelistService extends IClipboardWhitelist.Stub {
         forceStopPackage(packageName, userId);
     }
 
-    private void forceStopPackage(String packageName, int userId) {
+    private void forceStopPackage(final String packageName, final int userId) {
         try {
             BinderUtils.withEvaluated(() -> {
                 final ActivityThread thread = ActivityThread.currentActivityThread();
@@ -62,7 +62,7 @@ public class WhitelistService extends IClipboardWhitelist.Stub {
 
                 activityManager.forceStopPackageAsUser(packageName, userId);
             });
-        } catch (Exception e) {
+        } catch (final Exception e) {
             Log.w("Force stop package " + packageName + ": " + e, e);
         }
     }
