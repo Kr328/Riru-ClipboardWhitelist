@@ -11,7 +11,7 @@ android {
 
     sourceSets {
         all {
-            assets.srcDir(buildDir.resolve("intermediates/manager_apk/$name"))
+            assets.srcDir(layout.buildDirectory.dir("intermediates/manager_apk/$name"))
         }
     }
 }
@@ -54,11 +54,11 @@ androidComponents {
         val buildType = it.buildType!!
 
         afterEvaluate {
-            val packaging = project(":app").tasks["package${buildType.capitalize()}"]
-            val syncManager = task("syncManagerApk${name.capitalize()}", Sync::class) {
+            val packaging = project(":app").tasks["package${buildType.replaceFirstChar(Char::uppercase)}"]
+            val syncManager = task("syncManagerApk${name.replaceFirstChar(Char::uppercase)}", Sync::class) {
                 dependsOn(packaging)
 
-                destinationDir = buildDir.resolve("intermediates/manager_apk/$name")
+                into(layout.buildDirectory.dir("intermediates/manager_apk/$name"))
 
                 from(packaging.outputs) {
                     include("*.apk")
@@ -66,8 +66,8 @@ androidComponents {
                     rename { "ClipboardWhitelist.apk" }
                 }
             }
-            tasks["merge${name.capitalize()}Assets"].dependsOn(syncManager)
-            tasks.findByName("lintVitalAnalyze${name.capitalize()}")?.dependsOn(syncManager)
+            tasks["merge${name.replaceFirstChar(Char::uppercase)}Assets"].dependsOn(syncManager)
+            tasks.findByName("lintVitalAnalyze${name.replaceFirstChar(Char::uppercase)}")?.dependsOn(syncManager)
         }
     }
 }

@@ -4,4 +4,8 @@ plugins {
 
 android {
     namespace = "com.github.kr328.clipboard.shared"
+
+    buildFeatures {
+        aidl = true
+    }
 }

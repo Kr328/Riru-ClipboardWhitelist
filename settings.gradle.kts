@@ -21,8 +21,8 @@ dependencyResolutionManagement {
     }
     versionCatalogs {
         create("libs") {
-            val refine = "4.0.0"
-            val magic = "1.5"
+            val refine = "4.3.1"
+            val magic = "1.9"
 
             library("refine-processor", "dev.rikka.tools.refine:annotation-processor:$refine")
             library("refine-annotation", "dev.rikka.tools.refine:annotation:$refine")
